@@ -1,126 +1,148 @@
 import React from 'react'
-import { Layout, Menu, MenuProps } from 'antd'
-import { BrowserRouter } from 'react-router-dom'
-import {
-  ShoppingCartOutlined,
-  DollarOutlined,
-  LoginOutlined,
-  StarOutlined,
-  GiftOutlined,
-  CalendarOutlined,
-  UserOutlined,
-} from '@ant-design/icons'
-import { OrderForm } from '@components/OrderForm'
-import { PaymentForm } from '@components/PaymentForm'
-import { CheckInForm } from '@components/CheckInForm'
-import { LoyaltyPointsForm } from '@components/LoyaltyPointsForm'
-import { PromotionForm } from '@components/PromotionForm'
-import { PartyBookingForm } from '@components/PartyBookingForm'
-import { MemberRegistrationForm } from '@components/MemberRegistrationForm'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Layout } from 'antd'
+import { Header } from './components/Header'
+import { HomePage } from './components/HomePage'
+import { RoomsPage } from './components/RoomsPage'
+import { PartiesPage } from './components/PartiesPage'
+import { PromotionsPage } from './components/PromotionsPage'
+import { MembersPage } from './components/MembersPage'
+import './App.css'
 
-const { Header, Sider, Content } = Layout
-
-type MenuItem = Required<MenuProps>['items'][number]
-
-const menuItems: MenuItem[] = [
-  {
-    key: 'order',
-    icon: <ShoppingCartOutlined />,
-    label: 'Gọi Món',
-  },
-  {
-    key: 'payment',
-    icon: <DollarOutlined />,
-    label: 'Thanh Toán',
-  },
-  {
-    key: 'checkin',
-    icon: <LoginOutlined />,
-    label: 'Check In/Out',
-  },
-  {
-    key: 'loyalty',
-    icon: <StarOutlined />,
-    label: 'Điểm Tích Lũy',
-  },
-  {
-    key: 'promotion',
-    icon: <GiftOutlined />,
-    label: 'Ưu Đãi',
-  },
-  {
-    key: 'partybook',
-    icon: <CalendarOutlined />,
-    label: 'Đặt Tiệc',
-  },
-  {
-    key: 'memberreg',
-    icon: <UserOutlined />,
-    label: 'Đăng Ký Thành Viên',
-  },
-]
-
-interface RouteConfig {
-  path: string
-  component: React.FC
-  label: string
-}
-
-const routes: RouteConfig[] = [
-  { path: 'order', component: OrderForm, label: 'Gọi Món' },
-  { path: 'payment', component: PaymentForm, label: 'Thanh Toán' },
-  { path: 'checkin', component: CheckInForm, label: 'Check In/Out' },
-  { path: 'loyalty', component: LoyaltyPointsForm, label: 'Điểm Tích Lũy' },
-  { path: 'promotion', component: PromotionForm, label: 'Ưu Đãi' },
-  { path: 'partybook', component: PartyBookingForm, label: 'Đặt Tiệc' },
-  { path: 'memberreg', component: MemberRegistrationForm, label: 'Đăng Ký Thành Viên' },
-]
+const { Footer } = Layout
 
 export const App: React.FC = () => {
-  const [selectedKey, setSelectedKey] = React.useState('order')
-
-  const handleMenuClick: MenuProps['onClick'] = (e: any) => {
-    setSelectedKey(e.key)
-  }
-
-  const currentRoute = routes.find((route) => route.path === selectedKey)
-
   return (
-    <BrowserRouter>
-      <Layout style={{ minHeight: '100vh' }}>
-        <Header
+    <Router>
+      <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header onNavigate={() => {}} />
+
+        <Layout.Content style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/rooms" element={<RoomsPage />} />
+            <Route path="/parties" element={<PartiesPage />} />
+            <Route path="/promotions" element={<PromotionsPage />} />
+            <Route path="/members" element={<MembersPage />} />
+          </Routes>
+        </Layout.Content>
+
+        <Footer
           style={{
-            background: '#001529',
+            textAlign: 'center',
+            backgroundColor: '#001529',
             color: '#fff',
-            padding: '0 24px',
-            display: 'flex',
-            alignItems: 'center',
-            fontWeight: 'bold',
-            fontSize: '18px',
+            padding: '40px 20px',
           }}
         >
-          🎤 Karaoke N-Nice Quản Lý Hệ Thống
-        </Header>
-        <Layout>
-          <Sider width={200} style={{ background: '#fff', borderRight: '1px solid #f0f0f0' }}>
-            <Menu
-              mode="inline"
-              selectedKeys={[selectedKey]}
-              defaultOpenKeys={['order']}
-              items={menuItems}
-              onClick={handleMenuClick}
-              style={{ borderRight: 'none' }}
-            />
-          </Sider>
-          <Layout>
-            <Content style={{ padding: '24px', background: '#fafafa' }}>
-              <div style={{ background: '#fff', padding: '24px', borderRadius: '8px' }}>
-                {currentRoute && <currentRoute.component />}
+          <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', marginBottom: '30px' }}>
+              {/* About */}
+              <div>
+                <h4 style={{ marginBottom: '16px' }}>Về Karaoke NNice</h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Về chúng tôi
+                    </a>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Lịch sử
+                    </a>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Tuyển dụng
+                    </a>
+                  </li>
+                </ul>
               </div>
-            </Content>
-          </Layout>
-        </Layout>
+
+              {/* Services */}
+              <div>
+                <h4 style={{ marginBottom: '16px' }}>Dịch vụ</h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#/rooms" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Đặt phòng
+                    </a>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#/parties" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Gói tiệc
+                    </a>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#/members" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Chương trình thành viên
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Support */}
+              <div>
+                <h4 style={{ marginBottom: '16px' }}>Hỗ trợ</h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Liên hệ
+                    </a>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
+                      FAQ
+                    </a>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
+                      Chính sách bảo mật
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Contact */}
+              <div>
+                <h4 style={{ marginBottom: '16px' }}>Liên hệ</h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ marginBottom: '8px' }}>📞 0912 345 678</li>
+                  <li style={{ marginBottom: '8px' }}>📧 info@karaokennice.vn</li>
+                  <li style={{ marginBottom: '8px' }}>📍 123 Đường ABC, Quận 1, TP.HCM</li>
+                  <li>🕐 10:00 - 03:00 (T2-T7) | 10:00-02:00 (CN)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div
+              style={{
+                borderTop: '1px solid #333',
+                paddingTop: '20px',
+                textAlign: 'center',
+              }}
+            >
+              <p style={{ margin: 0, marginBottom: '10px' }}>
+                © 2024 Karaoke NNice. Tất cả các quyền được bảo lưu.
+              </p>
+              <div style={{ fontSize: '20px' }}>
+                <a href="#" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>
+                  📘
+                </a>
+                <a href="#" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>
+                  🐦
+                </a>
+                <a href="#" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>
+                  📷
+                </a>
+                <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
+                  ▶️
+                </a>
+              </div>
+            </div>
+          </div>
+        </Footer>
       </Layout>
-    </BrowserRouter>
+    </Router>
   )
 }
