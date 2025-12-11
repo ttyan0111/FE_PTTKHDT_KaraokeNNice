@@ -56,6 +56,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage = '' }) 
             <Button type="text" icon={<LoginOutlined />} className="login-btn">
               Đăng Nhập
             </Button>
+            <Button
+              type="text"
+              icon={<UserOutlined />}
+              className="admin-btn"
+              onClick={() => (window.location.href = '/admin')}
+            >
+              Admin
+            </Button>
             <Button type="primary" className="signup-btn">
               Đăng Ký
             </Button>
@@ -88,6 +96,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage = '' }) 
         <div className="mobile-auth-buttons">
           <Button type="text" icon={<LoginOutlined />} block>
             Đăng Nhập
+          </Button>
+          <Button
+            type="text"
+            icon={<UserOutlined />}
+            block
+            style={{ marginTop: '10px' }}
+            onClick={() => (window.location.href = '/admin')}
+          >
+            Admin
           </Button>
           <Button type="primary" block style={{ marginTop: '10px' }}>
             Đăng Ký

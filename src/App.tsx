@@ -7,6 +7,7 @@ import { RoomsPage } from './components/RoomsPage'
 import { PartiesPage } from './components/PartiesPage'
 import { PromotionsPage } from './components/PromotionsPage'
 import { MembersPage } from './components/MembersPage'
+import { AdminPage } from './components/AdminPage'
 import './App.css'
 
 const { Footer } = Layout
@@ -14,27 +15,35 @@ const { Footer } = Layout
 export const App: React.FC = () => {
   return (
     <Router>
-      <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Header onNavigate={() => {}} />
+      <Routes>
+        {/* Admin Routes (no header/footer) */}
+        <Route path="/admin" element={<AdminPage />} />
 
-        <Layout.Content style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/rooms" element={<RoomsPage />} />
-            <Route path="/parties" element={<PartiesPage />} />
-            <Route path="/promotions" element={<PromotionsPage />} />
-            <Route path="/members" element={<MembersPage />} />
-          </Routes>
-        </Layout.Content>
+        {/* Public Routes (with header/footer) */}
+        <Route
+          path="/*"
+          element={
+            <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+              <Header onNavigate={() => {}} />
 
-        <Footer
-          style={{
-            textAlign: 'center',
-            backgroundColor: '#001529',
-            color: '#fff',
-            padding: '40px 20px',
-          }}
-        >
+              <Layout.Content style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/rooms" element={<RoomsPage />} />
+                  <Route path="/parties" element={<PartiesPage />} />
+                  <Route path="/promotions" element={<PromotionsPage />} />
+                  <Route path="/members" element={<MembersPage />} />
+                </Routes>
+              </Layout.Content>
+
+              <Footer
+                style={{
+                  textAlign: 'center',
+                  backgroundColor: '#001529',
+                  color: '#fff',
+                  padding: '40px 20px',
+                }}
+              >
           <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', marginBottom: '30px' }}>
               {/* About */}
@@ -142,7 +151,10 @@ export const App: React.FC = () => {
             </div>
           </div>
         </Footer>
-      </Layout>
+            </Layout>
+          }
+        />
+      </Routes>
     </Router>
   )
 }
