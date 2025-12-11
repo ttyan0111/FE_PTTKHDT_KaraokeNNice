@@ -7,7 +7,7 @@ import { RoomsPage } from './components/RoomsPage'
 import { PartiesPage } from './components/PartiesPage'
 import { PromotionsPage } from './components/PromotionsPage'
 import { MembersPage } from './components/MembersPage'
-import { AdminPage } from './components/AdminPage'
+import { AdminPage } from './components/Admin'
 import './App.css'
 
 const { Footer } = Layout

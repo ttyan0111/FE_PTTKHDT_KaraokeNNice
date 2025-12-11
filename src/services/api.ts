@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosInstance, AxiosError } from 'axios'
 import type {
   OrderRequest,
   OrderResponse,
@@ -18,16 +18,49 @@ import type {
 
 const API_BASE_URL = 'http://localhost:8080/api/v1'
 
+interface ApiErrorResponse {
+  message: string
+  status?: number
+  timestamp?: string
+}
+
 class ApiClient {
   private client: AxiosInstance
 
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
+      timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
       },
     })
+
+    // Request interceptor - Add auth token if available
+    this.client.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('authToken')
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+      },
+      (error) => {
+        return Promise.reject(error)
+      }
+    )
+
+    // Response interceptor - Handle 401 errors
+    this.client.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError<ApiErrorResponse>) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('authToken')
+          window.location.href = '/login'
+        }
+        return Promise.reject(error)
+      }
+    )
   }
 
   // Order APIs
@@ -145,20 +178,31 @@ class ApiClient {
   async registerMember(
     data: MemberRegistrationRequest,
   ): Promise<MemberRegistrationResponse> {
-    const response = await this.client.post('/thanh-vien/dang-ky', data)
+    const response = await this.client.post('/khach-hang/dang-ky', data)
     return response.data
   }
 
   async getMemberByPhone(soDienThoai: string): Promise<MemberRegistrationResponse> {
-    const response = await this.client.get(`/thanh-vien/sdt/${soDienThoai}`)
+    const response = await this.client.get(`/khach-hang/sdt/${soDienThoai}`)
+    return response.data
+  }
+
+  async getMemberById(maKhachHang: string): Promise<MemberRegistrationResponse> {
+    const response = await this.client.get(`/khach-hang/${maKhachHang}`)
     return response.data
   }
 
   async updateMemberInfo(
-    maThanhVien: number,
+    maKhachHang: number,
     data: MemberRegistrationRequest,
   ): Promise<MemberRegistrationResponse> {
-    const response = await this.client.put(`/thanh-vien/${maThanhVien}`, data)
+    const response = await this.client.put(`/khach-hang/${maKhachHang}`, data)
+    return response.data
+  }
+
+  // Admin APIs - Get all members
+  async getAllMembers(): Promise<MemberRegistrationResponse[]> {
+    const response = await this.client.get('/khach-hang/tat-ca')
     return response.data
   }
 }

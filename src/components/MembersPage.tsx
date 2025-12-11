@@ -11,8 +11,10 @@ import {
   Table,
   Divider,
   InputNumber,
+  Space,
 } from 'antd'
-import { GiftOutlined, UserOutlined } from '@ant-design/icons'
+import { GiftOutlined, UserOutlined, SearchOutlined } from '@ant-design/icons'
+import { apiClient } from '../services/api'
 
 interface MemberTier {
   id: number
@@ -146,6 +148,8 @@ export const MembersPage: React.FC = () => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [isLoginModalVisible, setIsLoginModalVisible] = useState(false)
+  const [searchPhone, setSearchPhone] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
   const currentTier = memberTiers.find((tier) => tier.name === memberData.tier)
   const nextTier = memberTiers.find(
@@ -188,7 +192,7 @@ export const MembersPage: React.FC = () => {
     }
   }
 
-  const handleLogin = async (values: any) => {
+  const handleLogin = async (_values: any) => {
     setLoading(true)
     try {
       setTimeout(() => {
@@ -204,6 +208,36 @@ export const MembersPage: React.FC = () => {
     }
   }
 
+  const handleSearchMember = async () => {
+    if (!searchPhone.trim()) {
+      Modal.warning({ title: 'Cảnh báo', content: 'Vui lòng nhập số điện thoại' })
+      return
+    }
+    
+    setIsSearching(true)
+    try {
+      const response = await apiClient.getMemberByPhone(searchPhone)
+      if (response) {
+        setMemberData({
+          name: response.hoTen,
+          email: response.email || '',
+          points: 2850,
+          tier: 'Silver',
+          joinDate: new Date().toISOString().split('T')[0],
+          totalSpent: 15500000,
+          visits: 28,
+        })
+        setIsLoggedIn(true)
+        setSearchPhone('')
+        Modal.success({ title: 'Thành công', content: 'Tìm kiếm thành viên thành công' })
+      }
+    } catch (error: any) {
+      Modal.error({ title: 'Lỗi', content: error.response?.data?.message || 'Không tìm thấy thành viên' })
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
   if (!isLoggedIn) {
     return (
       <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -212,6 +246,32 @@ export const MembersPage: React.FC = () => {
           <p style={{ fontSize: '16px', color: '#666', marginBottom: '40px' }}>
             Đăng nhập để xem điểm tích lũy và ưu đãi của bạn
           </p>
+
+          {/* Search Member by Phone */}
+          <Card style={{ marginBottom: '30px', maxWidth: '500px', margin: '0 auto 30px' }}>
+            <p style={{ marginBottom: '16px', fontWeight: 'bold' }}>Tìm Kiếm Thành Viên</p>
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                size="large"
+                placeholder="Nhập số điện thoại (VD: 0123456789)"
+                value={searchPhone}
+                onChange={(e) => setSearchPhone(e.target.value)}
+                onPressEnter={handleSearchMember}
+              />
+              <Button
+                type="primary"
+                size="large"
+                loading={isSearching}
+                onClick={handleSearchMember}
+                style={{ background: '#667eea', borderColor: '#667eea' }}
+              >
+                <SearchOutlined /> Tìm Kiếm
+              </Button>
+            </Space.Compact>
+          </Card>
+
+          <p style={{ color: '#999', fontSize: '14px', marginBottom: '20px' }}>hoặc</p>
+
           <Button
             type="primary"
             size="large"

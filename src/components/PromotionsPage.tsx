@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Row, Col, Card, Button, Tag, Input, Space, Modal, Form, InputNumber, DatePicker } from 'antd'
+import { Row, Col, Card, Button, Tag, Input, Modal, Form, InputNumber } from 'antd'
 import { CopyOutlined, GiftOutlined, TagOutlined, CalendarOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
@@ -20,7 +20,7 @@ interface Promotion {
 }
 
 export const PromotionsPage: React.FC = () => {
-  const [promotions, setPromotions] = useState<Promotion[]>([
+  const [promotions] = useState<Promotion[]>([
     {
       id: 1,
       code: 'WELCOME50',
@@ -113,7 +113,6 @@ export const PromotionsPage: React.FC = () => {
     },
   ])
 
-  const [copiedCode, setCopiedCode] = useState<string>('')
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null)
   const [form] = Form.useForm()
@@ -121,12 +120,10 @@ export const PromotionsPage: React.FC = () => {
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code)
-    setCopiedCode(code)
     Modal.success({
       title: 'Đã sao chép',
       content: `Mã "${code}" đã được sao chép vào clipboard`
     })
-    setTimeout(() => setCopiedCode(''), 2000)
   }
 
   const handleApply = (promo: Promotion) => {
@@ -151,13 +148,6 @@ export const PromotionsPage: React.FC = () => {
       Modal.error({ title: 'Lỗi', content: 'Có lỗi xảy ra khi áp dụng mã' })
       setLoading(false)
     }
-  }
-
-  const calculateSavings = (promo: Promotion, amount: number = 1000000) => {
-    if (promo.type === 'percent') {
-      return Math.floor((amount * promo.discount) / 100)
-    }
-    return promo.discount
   }
 
   return (

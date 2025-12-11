@@ -10,11 +10,10 @@ import {
   InputNumber,
   DatePicker,
   Select,
-  Spin,
   Empty,
   Tag,
 } from 'antd'
-import { CalendarOutlined, UserOutlined, PhoneOutlined } from '@ant-design/icons'
+import { UserOutlined, PhoneOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
 interface Room {
@@ -28,7 +27,7 @@ interface Room {
 }
 
 export const RoomsPage: React.FC = () => {
-  const [rooms, setRooms] = useState<Room[]>([
+  const [rooms] = useState<Room[]>([
     {
       id: 1,
       name: 'Phòng VIP 1',

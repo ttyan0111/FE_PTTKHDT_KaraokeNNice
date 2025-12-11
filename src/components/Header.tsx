@@ -4,7 +4,6 @@ import {
   HomeOutlined,
   ShoppingCartOutlined,
   UserOutlined,
-  CreditCardOutlined,
   GiftOutlined,
   CalendarOutlined,
   LoginOutlined,

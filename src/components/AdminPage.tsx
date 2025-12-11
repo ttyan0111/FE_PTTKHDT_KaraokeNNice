@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Layout,
   Menu,
@@ -30,6 +30,7 @@ import {
   EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons'
+import { apiClient } from '../services/api'
 import './AdminPage.css'
 
 const { Sider, Content } = Layout
@@ -69,40 +70,75 @@ export const AdminPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
 
   // Sample data
-  const [members, setMembers] = useState<Member[]>([
-    {
-      id: 1,
-      name: 'Nguyễn Văn A',
-      email: 'nguyena@example.com',
-      phone: '0912345678',
-      tier: 'Gold',
-      points: 5000,
-      totalSpent: 15500000,
-      joinDate: '2023-06-15',
-    },
-    {
-      id: 2,
-      name: 'Trần Thị B',
-      email: 'tranb@example.com',
-      phone: '0987654321',
-      tier: 'Silver',
-      points: 2500,
-      totalSpent: 8200000,
-      joinDate: '2023-08-20',
-    },
-    {
-      id: 3,
-      name: 'Lê Văn C',
-      email: 'levanc@example.com',
-      phone: '0945678901',
-      tier: 'Bronze',
-      points: 800,
-      totalSpent: 3500000,
-      joinDate: '2024-01-10',
-    },
-  ])
+  const [members, setMembers] = useState<Member[]>([])
+
+  useEffect(() => {
+    fetchMembersData()
+  }, [])
+
+  const fetchMembersData = async () => {
+    try {
+      setDataLoading(true)
+      // Fetch from API
+      const response = await apiClient.getAllMembers()
+      if (response && Array.isArray(response)) {
+        // Map API response to Member interface
+        const mappedMembers = response.map((item: any) => ({
+          id: item.maKH || item.id || 0,
+          name: item.hoTen || item.name || '',
+          email: item.email || '',
+          phone: item.soDienThoai || item.phone || '',
+          tier: item.tier || 'Bronze',
+          points: item.points || 0,
+          totalSpent: item.totalSpent || 0,
+          joinDate: item.ngayDangKy || item.joinDate || new Date().toISOString().split('T')[0],
+        }))
+        setMembers(mappedMembers)
+      } else {
+        throw new Error('Empty response')
+      }
+    } catch (error) {
+      console.log('Using sample data:', error)
+      // Fallback to sample data
+      setMembers([
+        {
+          id: 1,
+          name: 'Nguyễn Văn A',
+          email: 'nguyena@example.com',
+          phone: '0912345678',
+          tier: 'Gold',
+          points: 5000,
+          totalSpent: 15500000,
+          joinDate: '2023-06-15',
+        },
+        {
+          id: 2,
+          name: 'Trần Thị B',
+          email: 'tranb@example.com',
+          phone: '0987654321',
+          tier: 'Silver',
+          points: 2500,
+          totalSpent: 8200000,
+          joinDate: '2023-08-20',
+        },
+        {
+          id: 3,
+          name: 'Lê Văn C',
+          email: 'levanc@example.com',
+          phone: '0945678901',
+          tier: 'Bronze',
+          points: 800,
+          totalSpent: 3500000,
+          joinDate: '2024-01-10',
+        },
+      ])
+    } finally {
+      setDataLoading(false)
+    }
+  }
 
   const [rooms] = useState<Room[]>([
     { id: 1, name: 'Phòng VIP 1', type: 'VIP', capacity: 8, price: 200000, status: 'available' },
@@ -286,7 +322,7 @@ export const AdminPage: React.FC = () => {
         </Button>
       </div>
       <Card>
-        <Table dataSource={members} columns={memberColumns} rowKey="id" />
+        <Table dataSource={members} columns={memberColumns} rowKey="id" loading={dataLoading} />
       </Card>
     </div>
   )
