@@ -23,6 +23,7 @@ import {
   UpOutlined,
   ExportOutlined,
   ManOutlined,
+  WomanOutlined,
   ArrowDownOutlined,
   HomeOutlined
 } from '@ant-design/icons';
@@ -87,6 +88,14 @@ const mockBranches: Branch[] = [
         level: 0,
         items: [
           // Facilities
+          {
+            id: 'elevator-ground',      // ID duy nhất
+            type: 'facility',           // Loại là tiện ích
+            facilityType: 'elevator',   // Kiểu thang máy (để hiện icon mũi tên lên)
+            label: 'Thang Máy',         // Tên hiển thị
+            position: 'corridor',       // Vị trí: nằm ở giữa hành lang (hoặc 'left'/'right')
+            order: 0                    // Thứ tự hiển thị (0 là trên cùng)
+          } as Facility,
           {
             id: 'facility-reception',
             type: 'facility',
@@ -507,7 +516,13 @@ const RoomsPage: React.FC = () => {
       // Facility
       const facilityIcons = {
         elevator: <UpOutlined />,
-        wc: <ManOutlined />,
+        wc: (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+            <ManOutlined style={{ color: '#1890ff' }} /> {/* Icon Nam màu xanh */}
+            <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>|</span>
+            <WomanOutlined style={{ color: '#eb2f96' }} /> {/* Icon Nữ màu hồng */}
+          </div>
+        ),
         exit: <ExportOutlined />,
         reception: <HomeOutlined />,
         waiting: <ClockCircleOutlined />
