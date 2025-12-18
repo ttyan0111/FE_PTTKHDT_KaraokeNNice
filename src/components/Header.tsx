@@ -10,26 +10,29 @@ import {
   MenuOutlined,
 } from '@ant-design/icons'
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import './Header.css'
 
 interface HeaderProps {
-  onNavigate: (page: string) => void
+  onNavigate?: (page: string) => void
   currentPage?: string
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage = '' }) => {
+export const Header: React.FC<HeaderProps> = () => {
   const [drawerVisible, setDrawerVisible] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const menuItems = [
-    { key: 'home', label: 'Trang Chủ', icon: <HomeOutlined /> },
-    { key: 'rooms', label: 'Phòng Hát', icon: <ShoppingCartOutlined /> },
-    { key: 'party', label: 'Đặt Tiệc', icon: <CalendarOutlined /> },
-    { key: 'promotions', label: 'Khuyến Mãi', icon: <GiftOutlined /> },
-    { key: 'member', label: 'Thành Viên', icon: <UserOutlined /> },
+    { key: '/', label: 'Trang Chủ', icon: <HomeOutlined /> },
+    { key: '/rooms', label: 'Phòng Hát', icon: <ShoppingCartOutlined /> },
+    { key: '/parties', label: 'Đặt Tiệc', icon: <CalendarOutlined /> },
+    { key: '/promotions', label: 'Khuyến Mãi', icon: <GiftOutlined /> },
+    { key: '/members', label: 'Thành Viên', icon: <UserOutlined /> },
   ]
 
   const handleMenuClick = (key: string) => {
-    onNavigate(key)
+    navigate(key)
     setDrawerVisible(false)
   }
 
@@ -38,13 +41,18 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage = '' }) 
       <header className="app-header">
         <div className="header-container">
           <div className="logo">
-            <h1>🎤 Karaoke NNice</h1>
+            <div className="logo-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+              </svg>
+            </div>
+            <h1>Karaoke NNice</h1>
           </div>
 
           {/* Desktop Menu */}
           <Menu
             mode="horizontal"
-            selectedKeys={[currentPage]}
+            selectedKeys={[location.pathname]}
             onClick={(e) => handleMenuClick(e.key)}
             className="desktop-menu"
             items={menuItems}
@@ -52,19 +60,21 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage = '' }) 
 
           {/* Desktop Auth Buttons */}
           <div className="auth-buttons">
-            <Button type="text" icon={<LoginOutlined />} className="login-btn">
-              Đăng Nhập
+            <Button type="text" className="login-btn">
+              <LoginOutlined className="btn-icon" />
+              <span className="btn-text">Đăng Nhập</span>
             </Button>
             <Button
               type="text"
-              icon={<UserOutlined />}
               className="admin-btn"
-              onClick={() => (window.location.href = '/admin')}
+              onClick={() => navigate('/admin')}
             >
-              Admin
+              <UserOutlined className="btn-icon" />
+              <span className="btn-text">Admin</span>
             </Button>
             <Button type="primary" className="signup-btn">
-              Đăng Ký
+              <span className="btn-shimmer"></span>
+              <span className="btn-text">Đăng Ký</span>
             </Button>
           </div>
 
@@ -88,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage = '' }) 
       >
         <Menu
           mode="vertical"
-          selectedKeys={[currentPage]}
+          selectedKeys={[location.pathname]}
           onClick={(e) => handleMenuClick(e.key)}
           items={menuItems}
         />

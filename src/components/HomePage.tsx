@@ -5,10 +5,40 @@ import {
   EnvironmentOutlined,
   ClockCircleOutlined,
   TeamOutlined,
+  SoundOutlined,
+  CustomerServiceOutlined,
+  CoffeeOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import './HomePage.css'
 
 export const HomePage: React.FC = () => {
+  const navigate = useNavigate()
+
+  const features = [
+    {
+      icon: <SoundOutlined />,
+      title: 'Âm Thanh Đỉnh Cao',
+      description: 'Hệ thống JBL Professional, mixer Yamaha cao cấp, âm thanh chuẩn studio',
+    },
+    {
+      icon: <CustomerServiceOutlined />,
+      title: 'Kho Nhạc Khổng Lồ',   
+      description: '100,000+ bài hát Việt - Hàn - Âu Mỹ, cập nhật hàng tuần, karaoke HD',
+    },
+    {
+      icon: <CoffeeOutlined />,
+      title: 'F&B Cao Cấp',
+      description: 'Menu đa dạng 200+ món, đồ uống premium, phục vụ tận phòng 24/7',
+    },
+    {
+      icon: <SafetyCertificateOutlined />,
+      title: 'Không Gian 5 Sao',
+      description: 'Phòng cách âm tốt, nội thất sang trọng, hệ thống đèn LED hiện đại',
+    },
+  ]
+
   return (
     <div className="home-page">
       {/* Hero Banner */}
@@ -17,7 +47,7 @@ export const HomePage: React.FC = () => {
           <div className="hero-content">
             <h1>Karaoke NNice</h1>
             <p>Hát, vui, và tạo kỉ niệm đáng nhớ cùng bạn bè</p>
-            <Button type="primary" size="large" onClick={() => window.location.hash = '/rooms'}>
+            <Button type="primary" size="large" onClick={() => navigate('/rooms')}>
               Đặt Phòng Ngay
             </Button>
           </div>
@@ -27,7 +57,7 @@ export const HomePage: React.FC = () => {
           <div className="hero-content">
             <h1>Đặt Tiệc Hoàn Hảo</h1>
             <p>Gói tiệc đặc biệt cho các sự kiện quan trọng</p>
-            <Button type="primary" size="large" onClick={() => window.location.hash = '/parties'}>
+            <Button type="primary" size="large" onClick={() => navigate('/parties')}>
               Xem Gói Tiệc
             </Button>
           </div>
@@ -37,7 +67,7 @@ export const HomePage: React.FC = () => {
           <div className="hero-content">
             <h1>Khuyến Mãi Hot</h1>
             <p>Giảm giá lên đến 30% cho thành viên mới</p>
-            <Button type="primary" size="large" onClick={() => window.location.hash = '/promotions'}>
+            <Button type="primary" size="large" onClick={() => navigate('/promotions')}>
               Xem Khuyến Mãi
             </Button>
           </div>
@@ -66,36 +96,22 @@ export const HomePage: React.FC = () => {
 
       {/* Features */}
       <div className="features-section">
-        <h2>Tại Sao Chọn Karaoke NNice?</h2>
-        <Row gutter={[24, 24]}>
-          <Col xs={24} sm={12} md={6}>
-            <Card hoverable className="feature-card">
-              <div className="feature-icon">🎤</div>
-              <h3>Âm Thanh Chất Lượng</h3>
-              <p>Hệ thống âm thanh hiện đại, chất lượng studio chuyên nghiệp</p>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card hoverable className="feature-card">
-              <div className="feature-icon">🎵</div>
-              <h3>Bài Hát Phong Phú</h3>
-              <p>Hơn 50,000 bài hát mới cập nhật hàng tuần</p>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card hoverable className="feature-card">
-              <div className="feature-icon">🍕</div>
-              <h3>Thức Ăn & Thức Uống</h3>
-              <p>Thực đơn đa dạng với giá cả hợp lý</p>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card hoverable className="feature-card">
-              <div className="feature-icon">✨</div>
-              <h3>Thoáng Mát & Sạch Sẽ</h3>
-              <p>Không gian hiện đại, sạch sẽ và thoáng mát</p>
-            </Card>
-          </Col>
+        <div className="section-header">
+          <h2>Trải Nghiệm Karaoke Đẳng Cấp</h2>
+          <p className="section-subtitle">Chất lượng dịch vụ hàng đầu tại Hà Nội</p>
+        </div>
+        <Row gutter={[32, 32]}>
+          {features.map((feature, index) => (
+            <Col xs={24} sm={12} lg={6} key={index}>
+              <Card hoverable className="feature-card" bordered={false}>
+                <div className="feature-icon-wrapper">
+                  {React.cloneElement(feature.icon, { className: 'feature-icon-svg' })}
+                </div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </Card>
+            </Col>
+          ))}
         </Row>
       </div>
 
@@ -107,14 +123,14 @@ export const HomePage: React.FC = () => {
           <Button
             type="primary"
             size="large"
-            onClick={() => window.location.hash = '/rooms'}
+            onClick={() => navigate('/rooms')}
             className="cta-button"
           >
             Đặt Phòng Hát
           </Button>
           <Button
             size="large"
-            onClick={() => window.location.hash = '/parties'}
+            onClick={() => navigate('/parties')}
             className="cta-button"
           >
             Đặt Tiệc Sự Kiện

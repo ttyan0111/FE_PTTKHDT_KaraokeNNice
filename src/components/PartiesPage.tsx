@@ -13,8 +13,16 @@ import {
   Checkbox,
   Space,
   Divider,
+  Tag,
 } from 'antd'
-import { UserOutlined, PhoneOutlined } from '@ant-design/icons'
+import { 
+  UserOutlined, 
+  PhoneOutlined,
+  GiftOutlined,
+  CrownOutlined,
+  StarOutlined,
+  TrophyOutlined,
+} from '@ant-design/icons'
 import dayjs from 'dayjs'
 
 interface PartyPackage {
@@ -38,7 +46,7 @@ export const PartiesPage: React.FC = () => {
       capacity: 20,
       description: '3 giờ hát, nước uống cơ bản',
       services: ['3 giờ hát', 'Nước uống', 'Bánh snacks'],
-      image: '🎉',
+      image: 'gift',
     },
     {
       id: 2,
@@ -48,7 +56,7 @@ export const PartiesPage: React.FC = () => {
       capacity: 30,
       description: '4 giờ hát, đồ ăn nhẹ, nước uống đa dạng',
       services: ['4 giờ hát', 'Nước uống', 'Đồ ăn nhẹ', 'Bánh kem 2kg'],
-      image: '🎂',
+      image: 'star',
     },
     {
       id: 3,
@@ -64,7 +72,7 @@ export const PartiesPage: React.FC = () => {
         'Bánh kem 3kg',
         'Nhân viên phục vụ',
       ],
-      image: '👑',
+      image: 'crown',
     },
     {
       id: 4,
@@ -82,9 +90,30 @@ export const PartiesPage: React.FC = () => {
         'Trang trí tiệc',
         'MC chủ trì',
       ],
-      image: '✨',
+      image: 'trophy',
     },
   ]
+
+  const getPackageIcon = (iconType: string) => {
+    const iconProps = { style: { fontSize: '48px', color: '#fff' } }
+    switch (iconType) {
+      case 'gift': return <GiftOutlined {...iconProps} />
+      case 'star': return <StarOutlined {...iconProps} />
+      case 'crown': return <CrownOutlined {...iconProps} />
+      case 'trophy': return <TrophyOutlined {...iconProps} />
+      default: return <GiftOutlined {...iconProps} />
+    }
+  }
+
+  const getPackageColor = (id: number) => {
+    const colors = {
+      1: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      2: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      3: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      4: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    }
+    return colors[id as keyof typeof colors] || colors[1]
+  }
 
   const [selectedPackage, setSelectedPackage] = useState<PartyPackage | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -149,58 +178,117 @@ export const PartiesPage: React.FC = () => {
               hoverable
               style={{
                 height: '100%',
-                border:
-                  pkg.id === 3
-                    ? '3px solid #667eea'
-                    : '1px solid #ddd',
+                border: '1px solid #e8e8e8',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               }}
+              bodyStyle={{ padding: '20px' }}
               cover={
                 <div
                   style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    height: '150px',
+                    background: getPackageColor(pkg.id),
+                    height: '180px',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '60px',
+                    position: 'relative',
                   }}
                 >
-                  {pkg.image}
+                  {getPackageIcon(pkg.image)}
+                  {pkg.id === 3 && (
+                    <Tag 
+                      color="gold" 
+                      style={{ 
+                        position: 'absolute', 
+                        top: '12px', 
+                        right: '12px',
+                        fontWeight: 'bold',
+                        fontSize: '11px'
+                      }}
+                    >
+                      PHỔ BIẾN
+                    </Tag>
+                  )}
                 </div>
               }
             >
-              <h3>{pkg.name}</h3>
+              <h3 style={{ 
+                fontSize: '20px', 
+                fontWeight: 'bold', 
+                marginBottom: '8px',
+                color: '#262626'
+              }}>
+                {pkg.name}
+              </h3>
               <div style={{ marginBottom: '16px' }}>
-                <p style={{ color: '#666', fontSize: '14px' }}>{pkg.description}</p>
+                <p style={{ 
+                  color: '#8c8c8c', 
+                  fontSize: '14px', 
+                  lineHeight: '1.6',
+                  minHeight: '42px'
+                }}>
+                  {pkg.description}
+                </p>
               </div>
 
               <div
                 style={{
-                  marginBottom: '16px',
-                  padding: '12px',
-                  background: '#f5f5f5',
-                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
+                  borderRadius: '10px',
+                  border: '1px solid #e8e8e8',
                 }}
               >
-                <p>
-                  <strong style={{ color: '#667eea', fontSize: '18px' }}>
+                <p style={{ margin: 0 }}>
+                  <strong style={{ 
+                    color: '#1890ff', 
+                    fontSize: '24px',
+                    fontWeight: '700'
+                  }}>
                     {pkg.price.toLocaleString('vi-VN')} đ
                   </strong>
                 </p>
-                <p style={{ fontSize: '12px', color: '#999' }}>
+                <p style={{ 
+                  fontSize: '13px', 
+                  color: '#8c8c8c',
+                  margin: '4px 0 0 0'
+                }}>
                   {pkg.duration}h • {pkg.capacity} người
                 </p>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ 
+                  fontSize: '13px', 
+                  fontWeight: '600', 
+                  marginBottom: '12px',
+                  color: '#262626'
+                }}>
                   Dịch vụ bao gồm:
                 </p>
-                {pkg.services.map((service, idx) => (
-                  <p key={idx} style={{ fontSize: '12px', color: '#666', margin: '4px 0' }}>
-                    ✓ {service}
-                  </p>
-                ))}
+                <div style={{ 
+                  background: '#fafafa',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #f0f0f0'
+                }}>
+                  {pkg.services.map((service, idx) => (
+                    <p key={idx} style={{ 
+                      fontSize: '13px', 
+                      color: '#595959', 
+                      margin: '6px 0',
+                      paddingLeft: '4px',
+                      lineHeight: '1.5'
+                    }}>
+                      <span style={{ color: '#52c41a', marginRight: '8px', fontWeight: 'bold' }}>✓</span>
+                      {service}
+                    </p>
+                  ))}
+                </div>
               </div>
 
               <Button
@@ -208,7 +296,15 @@ export const PartiesPage: React.FC = () => {
                 block
                 size="large"
                 onClick={() => handleBooking(pkg)}
-                style={{ background: '#667eea', borderColor: '#667eea' }}
+                style={{ 
+                  background: '#1890ff',
+                  borderColor: '#1890ff',
+                  height: '44px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
+                }}
               >
                 Đặt Tiệc
               </Button>

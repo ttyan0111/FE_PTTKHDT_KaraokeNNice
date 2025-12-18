@@ -24,7 +24,7 @@ export const App: React.FC = () => {
           path="/*"
           element={
             <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-              <Header onNavigate={() => {}} />
+              <Header />
 
               <Layout.Content style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
                 <Routes>

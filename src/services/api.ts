@@ -16,7 +16,8 @@ import type {
   MemberRegistrationResponse,
 } from '../types/index'
 
-const API_BASE_URL = 'http://localhost:8080/api/v1'
+// Sử dụng proxy từ vite.config.ts - tự động chuyển /api -> localhost:8080/api
+const API_BASE_URL = '/api'
 
 interface ApiErrorResponse {
   message: string

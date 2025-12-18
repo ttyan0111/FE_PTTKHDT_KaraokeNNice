@@ -9,7 +9,8 @@ body {
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #fafafa;
+  background: linear-gradient(180deg, #f8f7ff 0%, #faf5ff 50%, #f5f3ff 100%);
+  background-attachment: fixed;
 }
 
 code {
@@ -19,6 +20,8 @@ code {
 #root {
   width: 100%;
   min-height: 100vh;
+  padding-top: 0;
+  margin: 0;
 }
 
 /* Ant Design Customization */
