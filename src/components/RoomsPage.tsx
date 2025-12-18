@@ -21,7 +21,7 @@ import {
   EnvironmentOutlined,
   DollarOutlined,
   UpOutlined,
-  ExportOutlined,
+  LogoutOutlined,
   ManOutlined,
   WomanOutlined,
   ArrowDownOutlined,
@@ -295,6 +295,14 @@ const mockBranches: Branch[] = [
             order: 1
           } as Facility,
           {
+            id: 'facility-wc-2',
+            type: 'facility',
+            facilityType: 'wc',
+            label: 'WC',
+            position: 'left',
+            order: 2
+          } as Facility,
+          {
             id: 'facility-exit-2',
             type: 'facility',
             facilityType: 'exit',
@@ -517,13 +525,17 @@ const RoomsPage: React.FC = () => {
       const facilityIcons = {
         elevator: <UpOutlined />,
         wc: (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-            <ManOutlined style={{ color: '#1890ff' }} /> {/* Icon Nam màu xanh */}
-            <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>|</span>
-            <WomanOutlined style={{ color: '#eb2f96' }} /> {/* Icon Nữ màu hồng */}
+          <div className="facility-wc-combined">
+            <ManOutlined className="wc-icon-man" />
+            <span className="wc-divider">|</span>
+            <WomanOutlined className="wc-icon-woman" />
           </div>
         ),
-        exit: <ExportOutlined />,
+        exit: (
+          <div className="facility-exit-sign">
+            <LogoutOutlined className="exit-icon" />
+          </div>
+        ),
         reception: <HomeOutlined />,
         waiting: <ClockCircleOutlined />
       };

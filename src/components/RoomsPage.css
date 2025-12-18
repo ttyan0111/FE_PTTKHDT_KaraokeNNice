@@ -23,8 +23,8 @@
 
     /* Facility Colors */
     --facility-elevator: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-    --facility-wc: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
-    --facility-exit: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+    --facility-wc: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    --facility-exit: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
     --facility-reception: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
     --facility-waiting: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
 }
@@ -396,8 +396,52 @@
 
 .facility-exit {
     background: var(--facility-exit);
-    border-color: #ff4444;
-    animation: pulse-exit 2s ease-in-out infinite;
+    border-color: #00b09b;
+}
+
+.facility-wc-combined {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    padding: 0;
+    border: none;
+}
+
+.wc-icon-man {
+    color: #1890ff;
+    /* Xanh dương */
+}
+
+.wc-icon-woman {
+    color: #eb2f96;
+    /* Hồng */
+}
+
+.wc-divider {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.3);
+    margin: 0 2px;
+}
+
+.facility-exit-sign {
+    background: transparent;
+    color: white;
+    padding: 0;
+    border-radius: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: none;
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.exit-icon {
+    margin-right: 6px;
 }
 
 .facility-reception {
