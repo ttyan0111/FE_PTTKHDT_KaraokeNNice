@@ -40,13 +40,19 @@ export const Header: React.FC<HeaderProps> = () => {
     <>
       <header className="app-header">
         <div className="header-container">
-          <div className="logo">
-            <div className="logo-icon">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-              </svg>
-            </div>
-            <h1>Karaoke NNice</h1>
+          <div className="logo" style={{ display: 'flex', alignItems: 'center' }}> {/* Thêm flex để căn giữa */}
+            <img
+              src="/images/logo-nnice.png"
+              alt="Logo NNice"
+              style={{
+                height: '40px',
+                width: 'auto',
+                marginRight: '10px',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
+            <h1 style={{ margin: 0, lineHeight: 1 }}>Karaoke NNice</h1> {/* Xóa margin mặc định của h1 */}
           </div>
 
           {/* Desktop Menu */}
