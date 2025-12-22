@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
 
         if (!newErrors.userId && !newErrors.password) {
             setTimeout(() => {
-                alert('Login successful! 🎤');
+                alert('Đăng nhập thành công! 🎤');
                 setIsLoading(false);
             }, 1500);
         } else {
@@ -127,15 +127,15 @@ const LoginPage: React.FC = () => {
 
                                 {/* Header */}
                                 <div className="login-header">
-                                    <h3 className="login-title">Welcome Back!</h3>
-                                    <p className="login-subtitle">Please sign in to continue</p>
+                                    <h3 className="login-title">Chào mừng đến với NNice!</h3>
+                                    <p className="login-subtitle">Vui lòng đăng nhập để tiếp tục</p>
                                 </div>
 
                                 {/* Form */}
                                 <form onSubmit={handleSubmit} className="login-form">
                                     {/* User ID Input */}
                                     <div className="form-group">
-                                        <label className="form-label">Phone / User ID</label>
+                                        <label className="form-label">Số điện thoại / User ID</label>
                                         <div className={`form-input-wrapper ${errors.userId ? 'form-error' : ''}`}>
                                             <div className={`form-input-glow ${errors.userId ? 'form-input-glow-error' : ''}`}></div>
                                             <div className="form-input-inner">
@@ -144,19 +144,19 @@ const LoginPage: React.FC = () => {
                                                     type="text"
                                                     value={formData.userId}
                                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('userId', e.target.value)}
-                                                    placeholder="Enter your phone or user ID"
+                                                    placeholder="Nhập số điện thoại / User ID"
                                                     className={`form-input ${errors.userId ? 'form-input-error-border' : ''}`}
                                                 />
                                             </div>
                                         </div>
                                         {errors.userId && (
-                                            <p className="form-error-text">This field is required</p>
+                                            <p className="form-error-text">Vui lòng điền số Điện thoại / User ID</p>
                                         )}
                                     </div>
 
                                     {/* Password Input */}
                                     <div className="form-group">
-                                        <label className="form-label">Password</label>
+                                        <label className="form-label">Mật khẩu</label>
                                         <div className={`form-input-wrapper ${errors.password ? 'form-error' : ''}`}>
                                             <div className={`form-input-glow ${errors.password ? 'form-input-glow-error' : ''}`}></div>
                                             <div className="form-input-inner">
@@ -165,7 +165,7 @@ const LoginPage: React.FC = () => {
                                                     type={showPassword ? 'text' : 'password'}
                                                     value={formData.password}
                                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('password', e.target.value)}
-                                                    placeholder="Enter your password"
+                                                    placeholder="Nhập mật khẩu"
                                                     className={`form-input form-input-password ${errors.password ? 'form-input-error-border' : ''}`}
                                                 />
                                                 <button
@@ -178,7 +178,7 @@ const LoginPage: React.FC = () => {
                                             </div>
                                         </div>
                                         {errors.password && (
-                                            <p className="form-error-text">This field is required</p>
+                                            <p className="form-error-text">Vui lòng điền mật khẩu</p>
                                         )}
                                     </div>
 
@@ -191,13 +191,13 @@ const LoginPage: React.FC = () => {
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRememberMe(e.target.checked)}
                                                 className="form-checkbox"
                                             />
-                                            <span className="checkbox-text">Remember me</span>
+                                            <span className="checkbox-text">Nhớ mật khẩu</span>
                                         </label>
                                         <button
                                             type="button"
                                             className="forgot-password-btn"
                                         >
-                                            Forgot Password?
+                                            Quên mật khẩu?
                                         </button>
                                     </div>
 
@@ -212,11 +212,11 @@ const LoginPage: React.FC = () => {
                                             {isLoading ? (
                                                 <>
                                                     <div className="spinner"></div>
-                                                    <span>Signing in...</span>
+                                                    <span>Đang đăng nhập...</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <span>Sign In</span>
+                                                    <span>Đăng nhập</span>
                                                     <svg className="submit-btn-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                                     </svg>
@@ -229,7 +229,7 @@ const LoginPage: React.FC = () => {
                                 {/* Divider */}
                                 <div className="form-divider">
                                     <div className="divider-line"></div>
-                                    <span className="divider-text">Or login with</span>
+                                    <span className="divider-text">Hoặc đăng nhập với</span>
                                 </div>
 
                                 {/* Social Login */}
@@ -252,13 +252,13 @@ const LoginPage: React.FC = () => {
                                 {/* Footer */}
                                 <div className="login-card-footer">
                                     <p className="footer-text">
-                                        Don't have an account?{' '}
+                                        Không có tài khoản?{' '}
                                         <button
                                             type="button"
                                             className="signup-link"
                                             onClick={() => navigate('/register')}
                                         >
-                                            Sign up
+                                            Đăng ký ngay
                                         </button>
                                     </p>
                                 </div>

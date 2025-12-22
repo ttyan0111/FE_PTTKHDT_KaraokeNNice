@@ -66,7 +66,8 @@ export const Header: React.FC<HeaderProps> = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="auth-buttons">
-            <Button type="text" className="login-btn">
+            <Button type="text" className="login-btn"
+              onClick={() => navigate('/login')}>
               <LoginOutlined className="btn-icon" />
               <span className="btn-text">Đăng Nhập</span>
             </Button>

@@ -9,6 +9,7 @@ import { PromotionsPage } from './components/PromotionsPage'
 import { MembersPage } from './components/MembersPage'
 import { AdminPage } from './components/Admin'
 import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
 import './App.css'
 
 const { Footer } = Layout
@@ -35,6 +36,7 @@ export const App: React.FC = () => {
                   <Route path="/promotions" element={<PromotionsPage />} />
                   <Route path="/members" element={<MembersPage />} />
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
                 </Routes>
               </Layout.Content>
 
