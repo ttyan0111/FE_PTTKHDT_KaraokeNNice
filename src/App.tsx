@@ -11,7 +11,13 @@ import { AdminPage } from './components/Admin'
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import './App.css'
-
+import {
+  FacebookFilled,
+  XOutlined,
+  InstagramOutlined,
+  YoutubeFilled,
+  MailOutlined
+} from '@ant-design/icons';
 const { Footer } = Layout
 
 export const App: React.FC = () => {
@@ -121,7 +127,7 @@ export const App: React.FC = () => {
                       <h4 style={{ marginBottom: '16px' }}>Liên hệ</h4>
                       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                         <li style={{ marginBottom: '8px' }}>📞 0912 345 678</li>
-                        <li style={{ marginBottom: '8px' }}>📧 info@karaokennice.vn</li>
+                        <li style={{ marginBottom: '8px' }}><MailOutlined /> info@karaokennice.vn</li>
                         <li style={{ marginBottom: '8px' }}>📍 123 Đường ABC, Quận 1, TP.HCM</li>
                         <li>🕐 10:00 - 03:00 (T2-T7) | 10:00-02:00 (CN)</li>
                       </ul>
@@ -136,20 +142,20 @@ export const App: React.FC = () => {
                     }}
                   >
                     <p style={{ margin: 0, marginBottom: '10px' }}>
-                      © 2024 Karaoke NNice. Tất cả các quyền được bảo lưu.
+                      © 2025 Karaoke NNice. Tất cả các quyền được bảo lưu.
                     </p>
-                    <div style={{ fontSize: '20px' }}>
-                      <a href="#" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>
-                        📘
+                    <div style={{ fontSize: '24px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                      <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', transition: 'color 0.3s' }}>
+                        <FacebookFilled />
                       </a>
-                      <a href="#" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>
-                        🐦
+                      <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', transition: 'color 0.3s' }}>
+                        <XOutlined />
                       </a>
-                      <a href="#" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>
-                        📷
+                      <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', transition: 'color 0.3s' }}>
+                        <InstagramOutlined />
                       </a>
-                      <a href="#" style={{ color: '#fff', textDecoration: 'none' }}>
-                        ▶️
+                      <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', transition: 'color 0.3s' }}>
+                        <YoutubeFilled />
                       </a>
                     </div>
                   </div>

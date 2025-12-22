@@ -79,7 +79,8 @@ export const Header: React.FC<HeaderProps> = () => {
               <UserOutlined className="btn-icon" />
               <span className="btn-text">Admin</span>
             </Button>
-            <Button type="primary" className="signup-btn">
+            <Button type="primary" className="signup-btn"
+              onClick={() => navigate('/register')}>
               <span className="btn-shimmer"></span>
               <span className="btn-text">Đăng Ký</span>
             </Button>
