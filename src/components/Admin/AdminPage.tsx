@@ -8,9 +8,12 @@ import {
   GiftOutlined,
   LogoutOutlined,
 } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 import { Dashboard } from './Dashboard'
 import { MemberManagement } from './MemberManagement'
-import { RoomManagement } from './RoomManagement'
+import RoomManagement from './RoomManagement'
+import { RoomTypeManagement } from './RoomTypeManagement'
 import { OrderManagement } from './OrderManagement'
 import { PromotionManagement } from './PromotionManagement'
 
@@ -37,6 +40,8 @@ interface Order {
 export const AdminPage: React.FC = () => {
   const [selectedMenu, setSelectedMenu] = useState('dashboard')
   const [memberCount, setMemberCount] = useState(0)
+  const navigate = useNavigate()
+  const { logout } = useAuth()
 
   const [rooms] = useState<Room[]>([
     { id: 1, name: 'Phòng VIP 1', type: 'VIP', capacity: 8, price: 200000, status: 'available' },
@@ -86,8 +91,10 @@ export const AdminPage: React.FC = () => {
         )
       case 'members':
         return <MemberManagement onDataUpdate={() => console.log('Members updated')} />
+      case 'roomtypes':
+        return <RoomTypeManagement onDataUpdate={() => console.log('Room types updated')} />
       case 'rooms':
-        return <RoomManagement rooms={rooms} />
+        return <RoomManagement onDataUpdate={() => console.log('Rooms updated')} />
       case 'orders':
         return <OrderManagement orders={orders} />
       case 'promotions':
@@ -111,6 +118,7 @@ export const AdminPage: React.FC = () => {
           items={[
             { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
             { key: 'members', icon: <UserOutlined />, label: 'Thành Viên' },
+            { key: 'roomtypes', icon: <HomeOutlined />, label: 'Loại Phòng' },
             { key: 'rooms', icon: <HomeOutlined />, label: 'Phòng Hát' },
             { key: 'orders', icon: <ShoppingCartOutlined />, label: 'Đơn Hàng' },
             { key: 'promotions', icon: <GiftOutlined />, label: 'Khuyến Mãi' },
@@ -123,8 +131,8 @@ export const AdminPage: React.FC = () => {
             block
             icon={<LogoutOutlined />}
             onClick={() => {
-              message.success('Đăng xuất thành công')
-              // Handle logout
+              logout()
+              navigate('/')
             }}
           >
             Đăng Xuất

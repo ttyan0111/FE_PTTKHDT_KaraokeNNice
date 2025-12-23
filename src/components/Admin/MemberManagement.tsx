@@ -21,6 +21,7 @@ interface MemberManagementProps {
 export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate }) => {
   const [members, setMembers] = useState<Member[]>([])
   const [dataLoading, setDataLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
@@ -33,56 +34,46 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
   const fetchMembersData = async () => {
     try {
       setDataLoading(true)
-      const response = await apiClient.getAllMembers()
+      setError(null)
+      const response = await apiClient.getAllEmployees()
+      console.log('Response from getAllEmployees:', response)
+      console.log('Response length:', response?.length)
+      console.log('Response type:', typeof response)
+      
       if (response && Array.isArray(response)) {
-        const mappedMembers = response.map((item: any) => ({
-          id: item.maKH || item.id || 0,
-          name: item.hoTen || item.name || '',
-          email: item.email || '',
-          phone: item.soDienThoai || item.phone || '',
-          tier: item.tier || 'Bronze',
-          points: item.points || 0,
-          totalSpent: item.totalSpent || 0,
-          joinDate: item.ngayDangKy || item.joinDate || new Date().toISOString().split('T')[0],
-        }))
+        console.log(`Mapping ${response.length} items...`)
+        const mappedMembers = response.map((item: any, index: number) => {
+          try {
+            console.log(`Item ${index}:`, item)
+            const mapped = {
+              id: item.maNV || item.id || 0,
+              name: item.hoTen || item.tenNV || item.name || '',
+              email: item.email || '',
+              phone: item.sdt || item.phone || '',
+              tier: item.chucVu || item.tier || 'Bronze',
+              points: item.points || 0,
+              totalSpent: item.totalSpent || 0,
+              joinDate: item.ngayVaoLam || item.joinDate || new Date().toISOString().split('T')[0],
+            }
+            console.log(`Mapped ${index}:`, mapped)
+            return mapped
+          } catch (mapError) {
+            console.error(`Error mapping item ${index}:`, item, mapError)
+            throw new Error(`Lỗi xử lý dữ liệu item ${index}: ${(mapError as any).message}`)
+          }
+        })
+        console.log(`Successfully mapped ${mappedMembers.length} members`)
         setMembers(mappedMembers)
       } else {
-        throw new Error('Empty response')
+        throw new Error(`Dữ liệu không hợp lệ từ server. Response type: ${typeof response}`)
       }
-    } catch (error) {
-      console.log('Using sample data:', error)
-      setMembers([
-        {
-          id: 1,
-          name: 'Nguyễn Văn A',
-          email: 'nguyena@example.com',
-          phone: '0912345678',
-          tier: 'Gold',
-          points: 5000,
-          totalSpent: 15500000,
-          joinDate: '2023-06-15',
-        },
-        {
-          id: 2,
-          name: 'Trần Thị B',
-          email: 'tranb@example.com',
-          phone: '0987654321',
-          tier: 'Silver',
-          points: 2500,
-          totalSpent: 8200000,
-          joinDate: '2023-08-20',
-        },
-        {
-          id: 3,
-          name: 'Lê Văn C',
-          email: 'levanc@example.com',
-          phone: '0945678901',
-          tier: 'Bronze',
-          points: 800,
-          totalSpent: 3500000,
-          joinDate: '2024-01-10',
-        },
-      ])
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể load danh sách nhân viên từ database'
+      console.error('Load employees error:', error)
+      console.error('Full error object:', JSON.stringify(error, null, 2))
+      setError(errorMsg)
+      message.error(`❌ Lỗi load dữ liệu: ${errorMsg}`)
+      setMembers([])
     } finally {
       setDataLoading(false)
     }
@@ -186,7 +177,7 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
   return (
     <div>
       <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-        <h2>Quản Lý Thành Viên</h2>
+        <h2>Quản Lý Nhân Viên</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -196,9 +187,27 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
             setIsModalVisible(true)
           }}
         >
-          Thêm Thành Viên
+          Thêm Nhân Viên
         </Button>
       </div>
+
+      {error && (
+        <Card style={{ marginBottom: '16px', borderColor: '#ff4d4f', backgroundColor: '#fff2f0' }}>
+          <div style={{ color: '#ff4d4f', fontSize: '14px' }}>
+            <strong>❌ Lỗi:</strong> {error}
+            <br />
+            <small>Vui lòng kiểm tra kết nối database và thử lại.</small>
+            <Button
+              type="link"
+              size="small"
+              onClick={fetchMembersData}
+              style={{ marginLeft: '16px' }}
+            >
+              Thử lại
+            </Button>
+          </div>
+        </Card>
+      )}
 
       <Card>
         <Table

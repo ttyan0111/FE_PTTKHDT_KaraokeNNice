@@ -28,6 +28,11 @@ import {
   HomeOutlined
 } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { apiClient } from '../services/api';
+import { message } from 'antd';
+import type { DatPhongRequest } from '../types/index';
 import './RoomsPage.css';
 
 // ============= TYPE DEFINITIONS =============
@@ -367,12 +372,36 @@ const mockBranches: Branch[] = [
 // ============= HELPER FUNCTIONS =============
 const isRoom = (item: MapItem): item is Room => item.type === 'room';
 
+// Generate time slots from 9:00 to 23:00
+const generateTimeSlots = () => {
+  const slots = [];
+  for (let i = 9; i <= 23; i++) {
+    slots.push(`${i.toString().padStart(2, '0')}:00`);
+  }
+  return slots;
+};
+
+// Mock booked times (in real app, fetch from API)
+const getBookedTimes = (roomId: string, date: string): string[] => {
+  // Example: room-101 has 11:00, 12:00, 14:00 booked
+  const bookedMap: { [key: string]: string[] } = {
+    'room-101': ['11:00', '12:00', '14:00'],
+    'room-102': ['15:00', '16:00'],
+    'room-103': ['10:00', '13:00'],
+  };
+  return bookedMap[roomId] || [];
+};
+
 // ============= MAIN COMPONENT =============
 const RoomsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
   const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
   const [selectedFloorId, setSelectedFloorId] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
-  const [selectedTime, setSelectedTime] = useState<Dayjs>(dayjs());
+  const [selectedTime, setSelectedTime] = useState<Dayjs>(dayjs().hour(9).minute(0));
+  const [selectedEndTime, setSelectedEndTime] = useState<Dayjs>(dayjs().hour(11).minute(0));
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [duration, setDuration] = useState<number>(2);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -381,6 +410,11 @@ const RoomsPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
+  const timeSlots = useMemo(() => generateTimeSlots(), []);
+  const bookedTimes = useMemo(() => selectedRoom ? getBookedTimes(selectedRoom.id, selectedDate.format('YYYY-MM-DD')) : [], [selectedRoom, selectedDate]);
 
   const selectedBranch = useMemo(() => {
     return mockBranches.find(b => b.id === selectedBranchId) || null;
@@ -434,6 +468,21 @@ const RoomsPage: React.FC = () => {
   };
 
   const handleContinue = () => {
+    // Check authentication first
+    if (!isAuthenticated) {
+      Modal.confirm({
+        title: 'Yêu cầu đăng nhập',
+        content: 'Bạn cần đăng nhập để đặt phòng. Bạn muốn đăng nhập ngay?',
+        okText: 'Đăng nhập',
+        cancelText: 'Hủy',
+        onOk() {
+          navigate('/login');
+        }
+      });
+      return;
+    }
+
+    // If authenticated, open the modal
     if (selectedRoom && selectedBranch) {
       setIsModalVisible(true);
       setCustomerName('');
@@ -463,27 +512,39 @@ const RoomsPage: React.FC = () => {
   const handleBookingSubmit = () => {
     if (!validateForm()) return;
 
-    console.log('Booking submitted:', {
-      customerName,
-      phone,
-      notes,
-      branch: selectedBranch,
-      floor: selectedFloor,
-      room: selectedRoom,
-      date: selectedDate.format('YYYY-MM-DD'),
-      time: selectedTime.format('HH:mm'),
-      duration,
-      totalPrice
-    });
+    // Prepare booking data
+    const bookingData: DatPhongRequest = {
+      tenKH: customerName,
+      sdt: phone,
+      ghiChu: notes,
+      maPhong: selectedRoom?.id || '',
+      gioDat: selectedDate.format('YYYY-MM-DD') + 'T' + selectedTime.format('HH:mm:ss'),
+      gioKetThuc: selectedDate.clone().add(duration, 'hour').format('YYYY-MM-DD') + 'T' + selectedTime.format('HH:mm:ss'),
+      soNguoi: selectedRoom?.capacity,
+      maCoSo: selectedBranch?.id,
+    };
 
-    Modal.success({
-      title: 'Đặt Phòng Thành Công!',
-      content: `Đặt phòng ${selectedRoom?.name} tại ${selectedFloor?.name} đã được xác nhận!`,
-      onOk: () => {
-        setIsModalVisible(false);
-        setSelectedRoom(null);
-      }
-    });
+    // Call booking API
+    message.loading('Đang xử lý đặt phòng...');
+    apiClient
+      .bookRoom(bookingData)
+      .then((response) => {
+        message.success('Đặt Phòng Thành Công!');
+        console.log('Booking response:', response);
+        
+        Modal.success({
+          title: 'Đặt Phòng Thành Công!',
+          content: `Đặt phòng ${selectedRoom?.name} tại ${selectedFloor?.name} đã được xác nhận!\nMã phiếu đặt: ${response.maPhieuDat}`,
+          onOk: () => {
+            setIsModalVisible(false);
+            setSelectedRoom(null);
+          }
+        });
+      })
+      .catch((error) => {
+        message.error(error?.response?.data?.message || 'Đặt phòng thất bại. Vui lòng thử lại.');
+        console.error('Booking error:', error);
+      });
   };
 
   const renderMapItem = (item: MapItem) => {
@@ -797,8 +858,9 @@ const RoomsPage: React.FC = () => {
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
-        width={600}
+        width={700}
         className="booking-modal"
+        bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
       >
         <div className="booking-summary">
           <h3>Thông Tin Đặt Phòng</h3>
@@ -823,17 +885,139 @@ const RoomsPage: React.FC = () => {
             </Col>
             <Col span={12}>
               <div className="summary-field">
-                <label>Ngày & Giờ:</label>
-                <span>{selectedDate.format('DD/MM/YYYY')} - {selectedTime.format('HH:mm')}</span>
+                <label>Ngày:</label>
+                <span>{selectedDate.format('DD/MM/YYYY')}</span>
               </div>
             </Col>
             <Col span={24}>
               <div className="summary-field total-field">
-                <label>Tổng Tiền ({duration}h):</label>
+                <label>Tổng Tiền:</label>
                 <span className="total-price">{totalPrice.toLocaleString('vi-VN')} VND</span>
               </div>
             </Col>
           </Row>
+        </div>
+
+        {/* Time Slot Selection */}
+        <div style={{ marginBottom: '20px' }}>
+          <h3>Chọn Giờ Đặt Phòng</h3>
+          <Row gutter={[16, 16]}>
+            {/* Start Time Picker */}
+            <Col span={12}>
+              <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Giờ Bắt Đầu</label>
+              <Input
+                size="large"
+                placeholder="Nhấn để chọn giờ bắt đầu"
+                value={selectedTime.format('HH:mm')}
+                onClick={() => setShowStartTimePicker(!showStartTimePicker)}
+                readOnly
+                style={{ cursor: 'pointer' }}
+              />
+              {showStartTimePicker && (
+                <div
+                  style={{
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    padding: '8px',
+                    marginTop: '8px',
+                    backgroundColor: '#fff',
+                    zIndex: 10,
+                  }}
+                >
+                  {timeSlots.map((time) => {
+                    const isBooked = bookedTimes.includes(time);
+                    const isSelected = selectedTime.format('HH:mm') === time;
+                    return (
+                      <div
+                        key={`start-${time}`}
+                        onClick={() => {
+                          if (!isBooked) {
+                            setSelectedTime(dayjs(selectedDate.format('YYYY-MM-DD') + 'T' + time));
+                            setShowStartTimePicker(false);
+                          }
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          margin: '4px 0',
+                          borderRadius: '4px',
+                          cursor: isBooked ? 'not-allowed' : 'pointer',
+                          backgroundColor: isSelected ? '#1890ff' : isBooked ? '#ff4d4f' : '#f5f5f5',
+                          color: isSelected || isBooked ? '#fff' : '#000',
+                          border: isSelected ? '2px solid #1890ff' : isBooked ? '2px solid #ff4d4f' : '1px solid #d9d9d9',
+                          fontWeight: isSelected ? 'bold' : 'normal',
+                          opacity: isBooked ? 0.6 : 1,
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {time} {isBooked && '(Đã đặt)'}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Col>
+
+            {/* End Time Picker */}
+            <Col span={12}>
+              <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Giờ Kết Thúc</label>
+              <Input
+                size="large"
+                placeholder="Nhấn để chọn giờ kết thúc"
+                value={selectedEndTime.format('HH:mm')}
+                onClick={() => setShowEndTimePicker(!showEndTimePicker)}
+                readOnly
+                style={{ cursor: 'pointer' }}
+              />
+              {showEndTimePicker && (
+                <div
+                  style={{
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    padding: '8px',
+                    marginTop: '8px',
+                    backgroundColor: '#fff',
+                    zIndex: 10,
+                  }}
+                >
+                  {timeSlots.map((time) => {
+                    const isBooked = bookedTimes.includes(time);
+                    const isSelected = selectedEndTime.format('HH:mm') === time;
+                    const isDisabled = dayjs(selectedDate.format('YYYY-MM-DD') + 'T' + time).isBefore(selectedTime) || dayjs(selectedDate.format('YYYY-MM-DD') + 'T' + time).isSame(selectedTime) || isBooked;
+                    
+                    return (
+                      <div
+                        key={`end-${time}`}
+                        onClick={() => !isDisabled && (setSelectedEndTime(dayjs(selectedDate.format('YYYY-MM-DD') + 'T' + time)), setShowEndTimePicker(false))}
+                        style={{
+                          padding: '8px 12px',
+                          margin: '4px 0',
+                          borderRadius: '4px',
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          backgroundColor: isSelected ? '#1890ff' : isBooked ? '#ff4d4f' : isDisabled ? '#f0f0f0' : '#f5f5f5',
+                          color: isSelected || isBooked ? '#fff' : isDisabled ? '#999' : '#000',
+                          border: isSelected ? '2px solid #1890ff' : isBooked ? '2px solid #ff4d4f' : '1px solid #d9d9d9',
+                          fontWeight: isSelected ? 'bold' : 'normal',
+                          opacity: isDisabled ? 0.6 : 1,
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {time} {isBooked && '(Đã đặt)'}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Col>
+          </Row>
+          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
+            <p>
+              <strong>Thời gian:</strong> {selectedTime.format('HH:mm')} - {selectedEndTime.format('HH:mm')} ({selectedEndTime.diff(selectedTime, 'hour')} giờ)
+            </p>
+          </div>
         </div>
 
         <div className="form-field">

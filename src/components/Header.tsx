@@ -1,5 +1,5 @@
 import React from 'react'
-import { Menu, Button, Drawer } from 'antd'
+import { Menu, Button, Drawer, Avatar, Dropdown, type MenuProps } from 'antd'
 import {
   HomeOutlined,
   ShoppingCartOutlined,
@@ -8,9 +8,11 @@ import {
   CalendarOutlined,
   LoginOutlined,
   MenuOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import './Header.css'
 
 interface HeaderProps {
@@ -20,10 +22,18 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = () => {
   const [drawerVisible, setDrawerVisible] = useState(false)
+  const [authState, setAuthState] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, isAuthenticated, logout } = useAuth()
 
-  const menuItems = [
+  // Force re-render when auth state changes
+  useEffect(() => {
+    setAuthState(isAuthenticated)
+  }, [isAuthenticated])
+
+  // Menu items cho Customer
+  const customerMenuItems = [
     { key: '/', label: 'Trang Chủ', icon: <HomeOutlined /> },
     { key: '/rooms', label: 'Phòng Hát', icon: <ShoppingCartOutlined /> },
     { key: '/parties', label: 'Đặt Tiệc', icon: <CalendarOutlined /> },
@@ -31,10 +41,53 @@ export const Header: React.FC<HeaderProps> = () => {
     { key: '/members', label: 'Thành Viên', icon: <UserOutlined /> },
   ]
 
+  // Menu items cho Admin
+  const adminMenuItems = [
+    { key: '/admin', label: 'Dashboard', icon: <HomeOutlined /> },
+    { key: '/admin/members', label: 'Thành Viên', icon: <UserOutlined /> },
+    { key: '/admin/rooms', label: 'Phòng', icon: <ShoppingCartOutlined /> },
+    { key: '/admin/orders', label: 'Đơn Hàng', icon: <CalendarOutlined /> },
+    { key: '/admin/promotions', label: 'Khuyến Mãi', icon: <GiftOutlined /> },
+  ]
+
+  // Chọn menu dựa trên loại tài khoản
+  const menuItems = user?.loaiTaiKhoan === 'NHAN_VIEN' ? adminMenuItems : customerMenuItems
+
   const handleMenuClick = (key: string) => {
     navigate(key)
     setDrawerVisible(false)
   }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
+  // User dropdown menu items
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'profile',
+      label: 'Hồ Sơ Cá Nhân',
+      icon: <UserOutlined />,
+      onClick: () => navigate('/profile'),
+    },
+    {
+      key: 'settings',
+      label: 'Đổi mật khẩu',
+      icon: <UserOutlined />,
+      onClick: () => navigate('/settings'),
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'logout',
+      label: 'Đăng Xuất',
+      icon: <LogoutOutlined />,
+      onClick: handleLogout,
+      danger: true,
+    },
+  ]
 
   return (
     <>
@@ -66,24 +119,43 @@ export const Header: React.FC<HeaderProps> = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="auth-buttons">
-            <Button type="text" className="login-btn"
-              onClick={() => navigate('/login')}>
-              <LoginOutlined className="btn-icon" />
-              <span className="btn-text">Đăng Nhập</span>
-            </Button>
-            <Button
-              type="text"
-              className="admin-btn"
-              onClick={() => navigate('/admin')}
-            >
-              <UserOutlined className="btn-icon" />
-              <span className="btn-text">Admin</span>
-            </Button>
-            <Button type="primary" className="signup-btn"
-              onClick={() => navigate('/register')}>
-              <span className="btn-shimmer"></span>
-              <span className="btn-text">Đăng Ký</span>
-            </Button>
+            {authState && user ? (
+              // After login - show avatar + dropdown
+              <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <Avatar
+                    size={40}
+                    style={{ backgroundColor: '#c084fc' }}
+                    icon={<UserOutlined />}
+                  />
+                  <span style={{ color: '#fff', fontWeight: '500' }}>
+                    {user.hoTen || user.tenDangNhap}
+                  </span>
+                </div>
+              </Dropdown>
+            ) : (
+              // Before login - show login/register buttons
+              <>
+                <Button type="text" className="login-btn"
+                  onClick={() => navigate('/login')}>
+                  <LoginOutlined className="btn-icon" />
+                  <span className="btn-text">Đăng Nhập</span>
+                </Button>
+                <Button
+                  type="text"
+                  className="admin-btn"
+                  onClick={() => navigate('/admin')}
+                >
+                  <UserOutlined className="btn-icon" />
+                  <span className="btn-text">Admin</span>
+                </Button>
+                <Button type="primary" className="signup-btn"
+                  onClick={() => navigate('/register')}>
+                  <span className="btn-shimmer"></span>
+                  <span className="btn-text">Đăng Ký</span>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -111,21 +183,47 @@ export const Header: React.FC<HeaderProps> = () => {
           items={menuItems}
         />
         <div className="mobile-auth-buttons">
-          <Button type="text" icon={<LoginOutlined />} block>
-            Đăng Nhập
-          </Button>
-          <Button
-            type="text"
-            icon={<UserOutlined />}
-            block
-            style={{ marginTop: '10px' }}
-            onClick={() => (window.location.href = '/admin')}
-          >
-            Admin
-          </Button>
-          <Button type="primary" block style={{ marginTop: '10px' }}>
-            Đăng Ký
-          </Button>
+          {authState && user ? (
+            // After login - show user info and logout
+            <>
+              <div style={{ padding: '10px', color: '#fff' }}>
+                <p style={{ margin: 0, fontWeight: '500' }}>
+                  {user.hoTen || user.tenDangNhap}
+                </p>
+                <p style={{ margin: '5px 0 0 0', fontSize: '12px', opacity: 0.8 }}>
+                  {user.loaiTaiKhoan === 'KHACH_HANG' ? 'Khách Hàng' : 'Nhân Viên'}
+                </p>
+              </div>
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                block
+                onClick={handleLogout}
+                danger
+              >
+                Đăng Xuất
+              </Button>
+            </>
+          ) : (
+            // Before login - show login/register buttons
+            <>
+              <Button type="text" icon={<LoginOutlined />} block onClick={() => navigate('/login')}>
+                Đăng Nhập
+              </Button>
+              <Button
+                type="text"
+                icon={<UserOutlined />}
+                block
+                style={{ marginTop: '10px' }}
+                onClick={() => (window.location.href = '/admin')}
+              >
+                Admin
+              </Button>
+              <Button type="primary" block style={{ marginTop: '10px' }} onClick={() => navigate('/register')}>
+                Đăng Ký
+              </Button>
+            </>
+          )}
         </div>
       </Drawer>
     </>

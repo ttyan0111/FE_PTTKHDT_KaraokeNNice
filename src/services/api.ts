@@ -1,5 +1,9 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
   OrderRequest,
   OrderResponse,
   ThanhToanResponse,
@@ -14,6 +18,8 @@ import type {
   DatTiecResponse,
   MemberRegistrationRequest,
   MemberRegistrationResponse,
+  DatPhongRequest,
+  DatPhongResponse,
 } from '../types/index'
 
 // Sử dụng proxy từ vite.config.ts - tự động chuyển /api -> localhost:8080/api
@@ -31,7 +37,7 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 10000,
+      timeout: 30000, // Tăng từ 10000ms lên 30000ms (30 giây)
       headers: {
         'Content-Type': 'application/json',
       },
@@ -62,6 +68,28 @@ class ApiClient {
         return Promise.reject(error)
       }
     )
+  }
+
+  // Auth APIs
+  async login(data: LoginRequest): Promise<LoginResponse> {
+    const response = await this.client.post('/auth/login', data)
+    return response.data
+  }
+
+  async register(data: RegisterRequest): Promise<RegisterResponse> {
+    const response = await this.client.post('/auth/register', data)
+    return response.data
+  }
+
+  async verifyToken(token: string): Promise<boolean> {
+    try {
+      const response = await this.client.get('/auth/verify', {
+        params: { token },
+      })
+      return response.status === 200
+    } catch {
+      return false
+    }
   }
 
   // Order APIs
@@ -201,9 +229,121 @@ class ApiClient {
     return response.data
   }
 
-  // Admin APIs - Get all members
-  async getAllMembers(): Promise<MemberRegistrationResponse[]> {
-    const response = await this.client.get('/khach-hang/tat-ca')
+  // Admin APIs - Get all members (khách hàng)
+  async getAllMembers(): Promise<any[]> {
+    const response = await this.client.get('/v1/khach-hang/tat-ca')
+    console.log('getAllMembers response:', response.data)
+    return response.data
+  }
+
+  // Admin APIs - Get all employees (nhân viên)
+  async getAllEmployees(): Promise<any[]> {
+    const response = await this.client.get('/v1/quan-ly-tai-khoan-nhan-vien/danh-sach')
+    console.log('getAllEmployees raw response:', response)
+    console.log('getAllEmployees response.data:', response.data)
+    
+    // Nếu response.data là array, trả về nó
+    // Nếu response.data là object có property data/content, unwrap nó
+    let data = response.data
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      if (Array.isArray(data.data)) {
+        data = data.data
+      } else if (Array.isArray(data.content)) {
+        data = data.content
+      } else if (Array.isArray(data.employees)) {
+        data = data.employees
+      } else if (Array.isArray(data.nhanViens)) {
+        data = data.nhanViens
+      }
+    }
+    
+    console.log('getAllEmployees final data:', data)
+    return Array.isArray(data) ? data : []
+  }
+
+  // Room Type APIs (Loại Phòng)
+  async getAllRoomTypes(): Promise<any[]> {
+    const response = await this.client.get('/v1/loai-phong/tat-ca')
+    console.log('getAllRoomTypes response:', response.data)
+    return Array.isArray(response.data) ? response.data : []
+  }
+
+  async getRoomTypeById(maLoai: number): Promise<any> {
+    const response = await this.client.get(`/v1/loai-phong/${maLoai}`)
+    return response.data
+  }
+
+  async createRoomType(data: any): Promise<any> {
+    const response = await this.client.post('/v1/loai-phong', data)
+    return response.data
+  }
+
+  async updateRoomType(maLoai: number, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/loai-phong/${maLoai}`, data)
+    return response.data
+  }
+
+  async deleteRoomType(maLoai: number): Promise<void> {
+    await this.client.delete(`/v1/loai-phong/${maLoai}`)
+  }
+
+  // Room APIs
+  async getAllRooms(): Promise<any[]> {
+    const response = await this.client.get('/v1/phong/tat-ca')
+    console.log('getAllRooms response:', response.data)
+    return Array.isArray(response.data) ? response.data : []
+  }
+
+  async getRoomById(maPhong: number): Promise<any> {
+    const response = await this.client.get(`/v1/phong/${maPhong}`)
+    return response.data
+  }
+
+  async createRoom(data: any): Promise<any> {
+    const response = await this.client.post('/v1/phong', data)
+    return response.data
+  }
+
+  async updateRoom(maPhong: number, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/phong/${maPhong}`, data)
+    return response.data
+  }
+
+  async deleteRoom(maPhong: number): Promise<void> {
+    await this.client.delete(`/v1/phong/${maPhong}`)
+  }
+
+  // Booking APIs
+  async bookRoom(data: DatPhongRequest): Promise<DatPhongResponse> {
+    const response = await this.client.post('/dat-phong', data)
+    return response.data
+  }
+
+  async getBookingDetail(maPhieuDat: number): Promise<DatPhongResponse> {
+    const response = await this.client.get(`/dat-phong/${maPhieuDat}`)
+    return response.data
+  }
+
+  async updateBooking(
+    maPhieuDat: number,
+    data: DatPhongRequest,
+  ): Promise<DatPhongResponse> {
+    const response = await this.client.put(`/dat-phong/${maPhieuDat}`, data)
+    return response.data
+  }
+
+  async cancelBooking(maPhieuDat: number): Promise<void> {
+    await this.client.delete(`/dat-phong/${maPhieuDat}`)
+  }
+
+  async findAvailableRooms(
+    soNguoi?: number,
+    gioDat?: string,
+    gioKetThuc?: string,
+  ): Promise<any[]> {
+    const response = await this.client.get('/dat-phong/tim-phong-trong', {
+      params: { soNguoi, gioDat, gioKetThuc },
+    })
     return response.data
   }
 }
