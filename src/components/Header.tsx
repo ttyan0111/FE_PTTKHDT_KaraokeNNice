@@ -40,7 +40,8 @@ export const Header: React.FC<HeaderProps> = () => {
     <>
       <header className="app-header">
         <div className="header-container">
-          <div className="logo" style={{ display: 'flex', alignItems: 'center' }}> {/* Thêm flex để căn giữa */}
+          <div className="logo" style={{ display: 'flex', alignItems: 'center' }}
+            onClick={() => navigate('/')}> {/* Thêm flex để căn giữa */}
             <img
               src="/images/logo-nnice.png"
               alt="Logo NNice"
