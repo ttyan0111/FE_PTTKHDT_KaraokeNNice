@@ -23,8 +23,8 @@
 
     /* Facility Colors */
     --facility-elevator: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-    --facility-wc: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    --facility-exit: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+    --facility-wc: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+    --facility-exit: linear-gradient(135deg, #ff4500 0%, #ff2500 100%);
     --facility-reception: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
     --facility-waiting: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
 }
@@ -382,66 +382,128 @@
 .facility-item {
     border: 2px solid var(--border-neon);
     cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .facility-elevator {
     background: var(--facility-elevator);
     border-color: #718096;
+    min-width: 120px;
+    min-height: 80px;
+    padding: 15px;
 }
 
 .facility-wc {
     background: var(--facility-wc);
-    border-color: #00bcd4;
+    border-color: #00d4ff;
+    box-shadow: 0 0 20px rgba(30, 144, 255, 0.6), 0 0 40px rgba(30, 144, 255, 0.4);
+    animation: pulse-wc 2s ease-in-out infinite;
+    min-width: 140px;
+    min-height: 100px;
+    padding: 20px;
+    border-radius: 8px;
 }
 
 .facility-exit {
     background: var(--facility-exit);
-    border-color: #00b09b;
+    border-color: #ff6b00;
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.7), 0 0 40px rgba(255, 69, 0, 0.5);
+    animation: pulse-exit 2s ease-in-out infinite;
+    min-width: 140px;
+    min-height: 100px;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+@keyframes pulse-wc {
+    0% {
+        box-shadow: 0 0 15px rgba(30, 144, 255, 0.5), 0 0 30px rgba(30, 144, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(30, 144, 255, 0.8), 0 0 50px rgba(30, 144, 255, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(30, 144, 255, 0.5), 0 0 30px rgba(30, 144, 255, 0.3);
+    }
+}
+
+@keyframes pulse-exit {
+    0% {
+        box-shadow: 0 0 15px rgba(255, 69, 0, 0.6), 0 0 30px rgba(255, 69, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 69, 0, 0.9), 0 0 50px rgba(255, 69, 0, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(255, 69, 0, 0.6), 0 0 30px rgba(255, 69, 0, 0.4);
+    }
 }
 
 .facility-wc-combined {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 12px;
     background: transparent;
     padding: 0;
     border: none;
+    font-size: 32px;
+    font-weight: bold;
 }
 
 .wc-icon-man {
-    color: #1890ff;
-    /* Xanh dương */
+    color: #00d4ff;
+    font-size: 36px;
+    text-shadow: 0 0 15px rgba(0, 212, 255, 1);
 }
 
 .wc-icon-woman {
-    color: #eb2f96;
-    /* Hồng */
+    color: #ff1493;
+    font-size: 36px;
+    text-shadow: 0 0 15px rgba(255, 20, 147, 1);
 }
 
 .wc-divider {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.3);
-    margin: 0 2px;
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 6px;
 }
 
 .facility-exit-sign {
     background: transparent;
-    color: white;
+    color: #ffffff;
     padding: 0;
     border-radius: 0;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     border: none;
     box-shadow: none;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
+    font-size: 24px;
+    gap: 8px;
 }
 
 .exit-icon {
-    margin-right: 6px;
+    font-size: 32px;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(255, 69, 0, 1);
+}
+
+/* Add label text after icon */
+.facility-label {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
 }
 
 .facility-reception {

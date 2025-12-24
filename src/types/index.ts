@@ -1,3 +1,45 @@
+// Auth / Xác Thực
+export interface LoginRequest {
+  tenDangNhap: string
+  matKhau: string
+}
+
+export interface LoginResponse {
+  maTaiKhoan: number
+  tenDangNhap: string
+  loaiTaiKhoan: string
+  maKhachHang: number | null
+  hoTen: string
+  soDienThoai?: string
+  email?: string
+  token: string
+}
+
+export interface RegisterRequest {
+  hoTen: string
+  soDienThoai: string
+  email: string
+  tenDangNhap: string
+  matKhau: string
+  confirmMatKhau: string
+}
+
+export interface RegisterResponse {
+  maTaiKhoan: number
+  maKhachHang: number
+  tenDangNhap: string
+  hoTen: string
+  token: string
+}
+
+export interface AuthUser {
+  maTaiKhoan: number
+  tenDangNhap: string
+  loaiTaiKhoan: string
+  maKhachHang: number | null
+  hoTen: string
+}
+
 // Order / Đơn Gọi Món
 export interface OrderRequest {
   maPhieuSuDung: number
@@ -15,6 +57,33 @@ export interface OrderResponse {
   thanhTien: number
   thoiGianGoi: string
   trangThai: string
+}
+
+// Booking / Đặt Phòng
+export interface DatPhongRequest {
+  tenKH: string
+  sdt: string
+  ghiChu?: string
+  maPhong: string
+  gioDat: string
+  gioKetThuc: string
+  soNguoi?: number
+  maCoSo?: number
+}
+
+export interface DatPhongResponse {
+  maPhieuDat: number
+  tenKH: string
+  sdt: string
+  maPhong: string
+  tenPhong: string
+  gioDat: string
+  gioKetThuc: string
+  soNguoi: number
+  thanhTien: number
+  ghiChu: string
+  trangThai: string
+  thoiGianTao: string
 }
 
 // Payment / Thanh Toán

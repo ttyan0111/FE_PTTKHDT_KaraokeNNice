@@ -1,11 +1,14 @@
 import React from 'react';
-import { UserOutlined, LockOutlined, PhoneOutlined, AudioOutlined, GiftOutlined, ThunderboltOutlined, StarOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, PhoneOutlined, AudioOutlined, GiftOutlined, ThunderboltOutlined, StarOutlined, MailOutlined } from '@ant-design/icons';
+import { message } from 'antd';
 import './RegisterPage.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 interface FormData {
     fullName: string;
     phone: string;
+    email: string;
     password: string;
     confirmPassword: string;
     agreeTerms: boolean;
@@ -14,6 +17,7 @@ interface FormData {
 interface Errors {
     fullName: boolean;
     phone: boolean;
+    email: boolean;
     password: boolean;
     confirmPassword: boolean;
     agreeTerms: boolean;
@@ -21,11 +25,13 @@ interface Errors {
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
+    const { register, isLoading: authLoading } = useAuth();
     const [showPassword, setShowPassword] = React.useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>(false);
     const [formData, setFormData] = React.useState<FormData>({
         fullName: '',
         phone: '',
+        email: '',
         password: '',
         confirmPassword: '',
         agreeTerms: false
@@ -33,6 +39,7 @@ const RegisterPage: React.FC = () => {
     const [errors, setErrors] = React.useState<Errors>({
         fullName: false,
         phone: false,
+        email: false,
         password: false,
         confirmPassword: false,
         agreeTerms: false
@@ -44,7 +51,11 @@ const RegisterPage: React.FC = () => {
         return /^0[0-9]{9}$/.test(phone);
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    const validateEmail = (email: string): boolean => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setIsLoading(true);
 
@@ -52,6 +63,7 @@ const RegisterPage: React.FC = () => {
         const newErrors: Errors = {
             fullName: !formData.fullName.trim(),
             phone: !formData.phone || !validatePhone(formData.phone),
+            email: !formData.email || !validateEmail(formData.email),
             password: !formData.password || formData.password.length < 6,
             confirmPassword: !formData.confirmPassword || formData.password !== formData.confirmPassword,
             agreeTerms: !formData.agreeTerms
@@ -61,6 +73,9 @@ const RegisterPage: React.FC = () => {
         if (newErrors.fullName) newErrorMessages.fullName = 'Vui lòng nhập họ và tên';
         if (newErrors.phone) {
             newErrorMessages.phone = !formData.phone ? 'Vui lòng nhập số điện thoại' : 'Số điện thoại không hợp lệ (10 số)';
+        }
+        if (newErrors.email) {
+            newErrorMessages.email = !formData.email ? 'Vui lòng nhập email' : 'Email không hợp lệ';
         }
         if (newErrors.password) {
             newErrorMessages.password = !formData.password ? 'Vui lòng nhập mật khẩu' : 'Mật khẩu phải có ít nhất 6 ký tự';
@@ -74,33 +89,24 @@ const RegisterPage: React.FC = () => {
         setErrorMessages(newErrorMessages);
 
         if (!Object.values(newErrors).some(error => error)) {
-            setTimeout(() => {
-                // Show success alert
-                const successAlert = document.createElement('div');
-                successAlert.className = 'success-alert';
-                successAlert.innerHTML = `
-                    <div class="success-alert-content">
-                        <div class="success-icon">✓</div>
-                        <h3>Đăng ký thành công!</h3>
-                        <p>Tài khoản của bạn đã được tạo. Đang chuyển đến trang đăng nhập...</p>
-                    </div>
-                `;
-                document.body.appendChild(successAlert);
-
+            try {
+                await register(
+                    formData.fullName,
+                    formData.phone,
+                    formData.email,
+                    formData.phone,  // ← DÙng số điện thoại làm tên đăng nhập
+                    formData.password
+                );
+                message.success('Đăng ký thành công! 🎉');
                 setTimeout(() => {
-                    successAlert.classList.add('show');
-                }, 10);
-
-                setTimeout(() => {
-                    successAlert.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(successAlert);
-                        navigate('/login');
-                    }, 300);
-                }, 2000);
-
+                    window.location.href = '/';
+                }, 800);
+            } catch (error: any) {
+                const errorMsg = error?.response?.data || 'Đăng ký thất bại. Vui lòng thử lại.';
+                message.error(errorMsg);
+            } finally {
                 setIsLoading(false);
-            }, 1500);
+            }
         } else {
             setIsLoading(false);
         }
@@ -255,6 +261,27 @@ const RegisterPage: React.FC = () => {
                                         )}
                                     </div>
 
+                                    {/* Email Input */}
+                                    <div className="form-group">
+                                        <label className="form-label">Email</label>
+                                        <div className={`form-input-wrapper ${errors.email ? 'form-error' : ''}`}>
+                                            <div className={`form-input-glow ${errors.email ? 'form-input-glow-error' : ''}`}></div>
+                                            <div className="form-input-inner">
+                                                <MailOutlined style={{ position: 'absolute', left: '16px', color: '#c084fc', fontSize: '16px' }} />
+                                                <input
+                                                    type="email"
+                                                    value={formData.email}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('email', e.target.value)}
+                                                    placeholder="Nhập email"
+                                                    className={`form-input ${errors.email ? 'form-input-error-border' : ''}`}
+                                                />
+                                            </div>
+                                        </div>
+                                        {errors.email && (
+                                            <p className="form-error-text">{errorMessages.email}</p>
+                                        )}
+                                    </div>
+
                                     {/* Password Input */}
                                     <div className="form-group">
                                         <label className="form-label">Mật Khẩu</label>
@@ -332,12 +359,12 @@ const RegisterPage: React.FC = () => {
                                     {/* Register Button */}
                                     <button
                                         type="submit"
-                                        disabled={isLoading}
+                                        disabled={isLoading || authLoading}
                                         className="register-submit-btn"
                                     >
                                         <div className="submit-btn-gradient"></div>
                                         <div className="submit-btn-content">
-                                            {isLoading ? (
+                                            {isLoading || authLoading ? (
                                                 <>
                                                     <div className="spinner"></div>
                                                     <span>Đang đăng ký...</span>

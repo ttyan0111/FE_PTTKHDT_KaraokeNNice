@@ -1,7 +1,9 @@
 import React from 'react';
 import { UserOutlined, LockOutlined, EyeOutlined, EyeInvisibleOutlined, AudioOutlined, FacebookFilled } from '@ant-design/icons';
+import { message } from 'antd';
 import './LoginPage.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 interface FormData {
     userId: string;
@@ -15,15 +17,19 @@ interface Errors {
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
+    const { login, isLoading: authLoading, user } = useAuth();
     const [showPassword, setShowPassword] = React.useState<boolean>(false);
+    const [isAdminMode, setIsAdminMode] = React.useState<boolean>(false);
     const [formData, setFormData] = React.useState<FormData>({ userId: '', password: '' });
     const [errors, setErrors] = React.useState<Errors>({ userId: false, password: false });
     const [rememberMe, setRememberMe] = React.useState<boolean>(false);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = React.useState<string>('');
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setIsLoading(true);
+        setErrorMessage('');
 
         // Validation
         const newErrors: Errors = {
@@ -33,10 +39,43 @@ const LoginPage: React.FC = () => {
         setErrors(newErrors);
 
         if (!newErrors.userId && !newErrors.password) {
-            setTimeout(() => {
-                alert('Đăng nhập thành công! 🎤');
+            try {
+                await login(formData.userId, formData.password);
+                message.success('Đăng nhập thành công! 🎤');
+                
+                // Auto-redirect dựa trên loại tài khoản
+                setTimeout(() => {
+                    const userStr = localStorage.getItem('authUser');
+                    
+                    if (userStr) {
+                        try {
+                            const userData = JSON.parse(userStr);
+                            console.log('User data:', userData);
+                            
+                            // Nếu là NHAN_VIEN -> /admin, KHACH_HANG -> /
+                            if (userData.loaiTaiKhoan === 'NHAN_VIEN') {
+                                console.log('Redirecting to /admin');
+                                window.location.href = '/admin';
+                            } else {
+                                console.log('Redirecting to /');
+                                window.location.href = '/';
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse user data:', e);
+                            window.location.href = '/';
+                        }
+                    } else {
+                        console.warn('No user data in localStorage');
+                        window.location.href = '/';
+                    }
+                }, 800);
+            } catch (error: any) {
+                console.error('Login error:', error);
+                const errorMsg = error?.response?.data?.message || error?.response?.data || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+                setErrorMessage(errorMsg);
+                message.error(errorMsg);
                 setIsLoading(false);
-            }, 1500);
+            }
         } else {
             setIsLoading(false);
         }
@@ -46,6 +85,9 @@ const LoginPage: React.FC = () => {
         setFormData(prev => ({ ...prev, [field]: value }));
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: false }));
+        }
+        if (errorMessage) {
+            setErrorMessage('');
         }
     };
 
@@ -128,8 +170,70 @@ const LoginPage: React.FC = () => {
                                 {/* Header */}
                                 <div className="login-header">
                                     <h3 className="login-title">Chào mừng đến với NNice!</h3>
-                                    <p className="login-subtitle">Vui lòng đăng nhập để tiếp tục</p>
+                                    <p className="login-subtitle">
+                                        {isAdminMode ? 'Đăng nhập Quản Trị' : 'Đăng nhập Người Dùng'}
+                                    </p>
                                 </div>
+
+                                {/* Toggle Admin/User Mode */}
+                                <div style={{
+                                    display: 'flex',
+                                    marginBottom: '20px',
+                                    gap: '8px',
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    padding: '4px',
+                                    borderRadius: '8px'
+                                }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAdminMode(false)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            backgroundColor: !isAdminMode ? '#1890ff' : 'transparent',
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                            fontWeight: !isAdminMode ? 'bold' : 'normal',
+                                            transition: 'all 0.3s',
+                                        }}
+                                    >
+                                        👤 Người Dùng
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAdminMode(true)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            backgroundColor: isAdminMode ? '#1890ff' : 'transparent',
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                            fontWeight: isAdminMode ? 'bold' : 'normal',
+                                            transition: 'all 0.3s',
+                                        }}
+                                    >
+                                        ⚙️ Quản Trị
+                                    </button>
+                                </div>
+
+                                {/* Error Message */}
+                                {errorMessage && (
+                                    <div style={{
+                                        padding: '12px',
+                                        marginBottom: '16px',
+                                        backgroundColor: '#fee',
+                                        border: '1px solid #fcc',
+                                        borderRadius: '6px',
+                                        color: '#c33',
+                                        fontSize: '14px'
+                                    }}>
+                                        {errorMessage}
+                                    </div>
+                                )}
 
                                 {/* Form */}
                                 <form onSubmit={handleSubmit} className="login-form">
@@ -204,12 +308,12 @@ const LoginPage: React.FC = () => {
                                     {/* Sign In Button */}
                                     <button
                                         type="submit"
-                                        disabled={isLoading}
+                                        disabled={isLoading || authLoading}
                                         className="login-submit-btn"
                                     >
                                         <div className="submit-btn-gradient"></div>
                                         <div className="submit-btn-content">
-                                            {isLoading ? (
+                                            {isLoading || authLoading ? (
                                                 <>
                                                     <div className="spinner"></div>
                                                     <span>Đang đăng nhập...</span>

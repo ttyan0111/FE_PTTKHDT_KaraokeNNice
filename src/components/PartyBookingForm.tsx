@@ -1,9 +1,13 @@
 import React from 'react'
-import { Form, Button, Card, message, InputNumber, DatePicker, Table, Tag } from 'antd'
+import { Form, Button, Card, message, InputNumber, DatePicker, Table, Tag, Modal } from 'antd'
+import { useNavigate } from 'react-router-dom'
 import { apiClient } from '@services/api'
+import { useAuth } from '../hooks/useAuth'
 import type { DatTiecResponse } from '../types/index'
 
 export const PartyBookingForm: React.FC = () => {
+  const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
   const [form] = Form.useForm()
   const [loading, setLoading] = React.useState(false)
   const [bookingResult, setBookingResult] = React.useState<DatTiecResponse | null>(null)
@@ -11,10 +15,24 @@ export const PartyBookingForm: React.FC = () => {
   const [showList, setShowList] = React.useState(false)
 
   const onCreateBooking = async (values: any) => {
+    // Check authentication before booking
+    if (!isAuthenticated || !user) {
+      Modal.confirm({
+        title: 'Yêu cầu đăng nhập',
+        content: 'Bạn cần đăng nhập để đặt tiệc. Bạn muốn đăng nhập ngay?',
+        okText: 'Đăng nhập',
+        cancelText: 'Hủy',
+        onOk() {
+          navigate('/login')
+        }
+      })
+      return
+    }
+
     try {
       setLoading(true)
       const response = await apiClient.createPartyBooking({
-        maKhachHang: values.maKhachHang,
+        maKhachHang: user.maKhachHang || values.maKhachHang,
         maGoiTiec: values.maGoiTiec,
         ngayToChuc: values.ngayToChuc.format('YYYY-MM-DD'),
         soLuongNguoiDuKien: values.soLuongNguoiDuKien
@@ -31,6 +49,20 @@ export const PartyBookingForm: React.FC = () => {
   }
 
   const fetchBookingList = async () => {
+    // Check authentication before fetching
+    if (!isAuthenticated) {
+      Modal.confirm({
+        title: 'Yêu cầu đăng nhập',
+        content: 'Bạn cần đăng nhập để xem danh sách đặt tiệc. Bạn muốn đăng nhập ngay?',
+        okText: 'Đăng nhập',
+        cancelText: 'Hủy',
+        onOk() {
+          navigate('/login')
+        }
+      })
+      return
+    }
+
     try {
       setLoading(true)
       const list = await apiClient.getPartyBookingList('CHUA_DUNG')
