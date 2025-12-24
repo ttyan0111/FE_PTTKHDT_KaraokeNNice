@@ -521,7 +521,7 @@ export const AdminPage: React.FC = () => {
             { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
             { key: 'members', icon: <UserOutlined />, label: 'Thành Viên' },
             { key: 'rooms', icon: <HomeOutlined />, label: 'Phòng Hát' },
-            { key: 'orders', icon: <ShoppingCartOutlined />, label: 'Đơn Hàng' },
+            { key: 'orders', icon: <ShoppingCartOutlined />, label: 'Hóa Đơn' },
             { key: 'promotions', icon: <GiftOutlined />, label: 'Khuyến Mãi' },
           ]}
         />

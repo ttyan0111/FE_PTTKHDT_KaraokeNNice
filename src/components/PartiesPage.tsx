@@ -1,430 +1,473 @@
-import React, { useState } from 'react'
-import {
-  Row,
-  Col,
-  Card,
-  Button,
-  Modal,
-  Form,
-  Input,
-  InputNumber,
-  DatePicker,
-  Select,
-  Checkbox,
-  Space,
-  Divider,
-  Tag,
-} from 'antd'
-import { 
-  UserOutlined, 
-  PhoneOutlined,
-  GiftOutlined,
-  CrownOutlined,
-  StarOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons'
+import React from 'react'
+import { Form, Button, Card, message, InputNumber, DatePicker, Table, Tag, Modal, Select, Alert, Descriptions, Divider } from 'antd'
+import { useNavigate } from 'react-router-dom'
+import { apiClient } from '@services/api'
+import { useAuth } from '../hooks/useAuth'
+import type { DatTiecResponse, GoiTiecResponse, SanhTiecResponse } from '../types/index'
 import dayjs from 'dayjs'
 
-interface PartyPackage {
-  id: number
-  name: string
-  price: number
-  duration: number
-  capacity: number
-  description: string
-  services: string[]
-  image: string
-}
+const { Option } = Select
 
 export const PartiesPage: React.FC = () => {
-  const packages: PartyPackage[] = [
-    {
-      id: 1,
-      name: 'Gói Cơ Bản',
-      price: 500000,
-      duration: 3,
-      capacity: 20,
-      description: '3 giờ hát, nước uống cơ bản',
-      services: ['3 giờ hát', 'Nước uống', 'Bánh snacks'],
-      image: 'gift',
-    },
-    {
-      id: 2,
-      name: 'Gói Tiêu Chuẩn',
-      price: 800000,
-      duration: 4,
-      capacity: 30,
-      description: '4 giờ hát, đồ ăn nhẹ, nước uống đa dạng',
-      services: ['4 giờ hát', 'Nước uống', 'Đồ ăn nhẹ', 'Bánh kem 2kg'],
-      image: 'star',
-    },
-    {
-      id: 3,
-      name: 'Gói Premium',
-      price: 1200000,
-      duration: 5,
-      capacity: 50,
-      description: '5 giờ hát, thức ăn đầy đủ, nhân viên phục vụ',
-      services: [
-        '5 giờ hát',
-        'Nước uống cao cấp',
-        'Thức ăn đầy đủ',
-        'Bánh kem 3kg',
-        'Nhân viên phục vụ',
-      ],
-      image: 'crown',
-    },
-    {
-      id: 4,
-      name: 'Gói Vip',
-      price: 2000000,
-      duration: 6,
-      capacity: 100,
-      description: '6 giờ hát, dịch vụ VIP, trang trí riêng',
-      services: [
-        '6 giờ hát',
-        'Nước uống cao cấp',
-        'Thức ăn sang trọng',
-        'Bánh kem 5kg',
-        'Nhân viên phục vụ riêng',
-        'Trang trí tiệc',
-        'MC chủ trì',
-      ],
-      image: 'trophy',
-    },
-  ]
-
-  const getPackageIcon = (iconType: string) => {
-    const iconProps = { style: { fontSize: '48px', color: '#fff' } }
-    switch (iconType) {
-      case 'gift': return <GiftOutlined {...iconProps} />
-      case 'star': return <StarOutlined {...iconProps} />
-      case 'crown': return <CrownOutlined {...iconProps} />
-      case 'trophy': return <TrophyOutlined {...iconProps} />
-      default: return <GiftOutlined {...iconProps} />
-    }
-  }
-
-  const getPackageColor = (id: number) => {
-    const colors = {
-      1: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      2: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      3: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      4: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    }
-    return colors[id as keyof typeof colors] || colors[1]
-  }
-
-  const [selectedPackage, setSelectedPackage] = useState<PartyPackage | null>(null)
-  const [isModalVisible, setIsModalVisible] = useState(false)
+  const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
   const [form] = Form.useForm()
-  const [loading, setLoading] = useState(false)
-  const [addOns, setAddOns] = useState<string[]>([])
+  const [loading, setLoading] = React.useState(false)
+  const [bookingResult, setBookingResult] = React.useState<DatTiecResponse | null>(null)
+  const [bookingList, setBookingList] = React.useState<DatTiecResponse[]>([])
+  const [showList, setShowList] = React.useState(false)
+  const [partyPackages, setPartyPackages] = React.useState<GoiTiecResponse[]>([])
+  const [banquetHalls, setBanquetHalls] = React.useState<SanhTiecResponse[]>([])
+  const [filteredHalls, setFilteredHalls] = React.useState<SanhTiecResponse[]>([])
+  const [expectedGuests, setExpectedGuests] = React.useState<number>(0)
+  const [selectedPackage, setSelectedPackage] = React.useState<GoiTiecResponse | null>(null)
+  const [selectedHall, setSelectedHall] = React.useState<SanhTiecResponse | null>(null)
+  const [estimatedTotal, setEstimatedTotal] = React.useState<number>(0)
 
-  const availableAddOns = [
-    { id: 'dj', name: 'DJ Live Mix', price: 150000 },
-    { id: 'photographer', name: 'Photographer', price: 200000 },
-    { id: 'flower', name: 'Trang trí hoa', price: 300000 },
-    { id: 'extra_food', name: 'Thêm thức ăn', price: 250000 },
-  ]
+  React.useEffect(() => {
+    fetchPartyPackages()
+    fetchBanquetHalls()
+    
+    // Auto-fill customer ID if logged in
+    if (isAuthenticated && user?.maKhachHang) {
+      form.setFieldsValue({ maKhachHang: user.maKhachHang })
+    }
+  }, [])
 
-  const handleBooking = (pkg: PartyPackage) => {
-    setSelectedPackage(pkg)
-    setIsModalVisible(true)
-    setAddOns([])
-  }
+  React.useEffect(() => {
+    if (expectedGuests > 0) {
+      const filtered = banquetHalls.filter(hall => hall.sucChua >= expectedGuests && hall.trangThai === 'TRONG')
+      setFilteredHalls(filtered)
+      
+      // Reset hall selection if current selection is no longer valid
+      const currentHallId = form.getFieldValue('maSanh')
+      if (currentHallId && !filtered.find(h => h.maSanh === currentHallId)) {
+        form.setFieldsValue({ maSanh: undefined })
+        setSelectedHall(null)
+      }
+    } else {
+      setFilteredHalls(banquetHalls.filter(hall => hall.trangThai === 'TRONG'))
+    }
+  }, [expectedGuests, banquetHalls])
 
-  const handleAddOnChange = (id: string) => {
-    setAddOns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
-  }
+  React.useEffect(() => {
+    // Calculate estimated total
+    if (selectedPackage && selectedHall && expectedGuests > 0) {
+      const total = (selectedPackage.giaTronGoi * expectedGuests) + selectedHall.giaThue
+      setEstimatedTotal(total)
+    } else {
+      setEstimatedTotal(0)
+    }
+  }, [selectedPackage, selectedHall, expectedGuests])
 
-  const calculateTotal = () => {
-    if (!selectedPackage) return 0
-    const addOnTotal = availableAddOns
-      .filter((ao) => addOns.includes(ao.id))
-      .reduce((sum, ao) => sum + ao.price, 0)
-    return selectedPackage.price + addOnTotal
-  }
-
-  const handleSubmit = async (values: any) => {
-    setLoading(true)
+  const fetchPartyPackages = async () => {
     try {
-      console.log('Party Booking:', { package: selectedPackage, addOns, ...values })
-      setTimeout(() => {
-        Modal.success({
-          title: 'Đặt tiệc thành công',
-          content: `Tiệc ${selectedPackage?.name} đã được đặt. Vui lòng check email để xác nhận.`,
-        })
-        setIsModalVisible(false)
-        form.resetFields()
-        setLoading(false)
-      }, 1000)
+      const packages = await apiClient.getAllPartyPackages()
+      setPartyPackages(packages)
     } catch (error) {
-      Modal.error({ title: 'Lỗi', content: 'Có lỗi xảy ra khi đặt tiệc' })
+      console.error('Failed to fetch party packages:', error)
+    }
+  }
+
+  const fetchBanquetHalls = async () => {
+    try {
+      const halls = await apiClient.getAllBanquetHalls()
+      setBanquetHalls(halls)
+    } catch (error) {
+      console.error('Failed to fetch banquet halls:', error)
+    }
+  }
+
+  const onCreateBooking = async (values: any) => {
+    // Check authentication before booking
+    if (!isAuthenticated || !user) {
+      Modal.confirm({
+        title: 'Yeu cau dang nhap',
+        content: 'Ban can dang nhap de dat tiec. Ban muon dang nhap ngay?',
+        okText: 'Dang nhap',
+        cancelText: 'Huy',
+        onOk() {
+          navigate('/login')
+        }
+      })
+      return
+    }
+
+    // Final confirmation
+    Modal.confirm({
+      title: 'Xac nhan dat tiec',
+      content: `Ban co chac chan muon dat tiec voi tong tien du kien ${estimatedTotal.toLocaleString()}d?`,
+      okText: 'Xac nhan',
+      cancelText: 'Huy',
+      onOk: async () => {
+        try {
+          setLoading(true)
+          const response = await apiClient.createPartyBooking({
+            maKH: user.maKhachHang || values.maKhachHang,
+            maGoi: values.maGoiTiec,
+            maSanh: values.maSanh,
+            ngayToChuc: values.ngayToChuc.format('YYYY-MM-DD'),
+            soLuongNguoi: values.soLuongNguoiDuKien
+          })
+          setBookingResult(response)
+          message.success('Dat tiec thanh cong! Vui long thanh toan dat coc de giu cho.')
+          form.resetFields()
+          // Re-fill customer ID after reset
+          if (user?.maKhachHang) {
+            form.setFieldsValue({ maKhachHang: user.maKhachHang })
+          }
+          fetchBanquetHalls() // Refresh banquet halls availability
+          setSelectedPackage(null)
+          setSelectedHall(null)
+          setExpectedGuests(0)
+        } catch (error: any) {
+          message.error(error.response?.data?.message || 'Loi khi dat tiec')
+          console.error(error)
+        } finally {
+          setLoading(false)
+        }
+      }
+    })
+  }
+
+  const fetchBookingList = async () => {
+    // Check authentication before fetching
+    if (!isAuthenticated) {
+      Modal.confirm({
+        title: 'Yeu cau dang nhap',
+        content: 'Ban can dang nhap de xem danh sach dat tiec. Ban muon dang nhap ngay?',
+        okText: 'Dang nhap',
+        cancelText: 'Huy',
+        onOk() {
+          navigate('/login')
+        }
+      })
+      return
+    }
+
+    try {
+      setLoading(true)
+      const list = await apiClient.getPartyBookingList('CHUA_DUNG')
+      setBookingList(list)
+      setShowList(true)
+    } catch (error) {
+      message.error('Loi khi tai danh sach dat tiec')
+      console.error(error)
+    } finally {
       setLoading(false)
     }
   }
 
+  const columns = [
+    {
+      title: 'Ma Dat Tiec',
+      dataIndex: 'maDonDatTiec',
+      key: 'maDonDatTiec',
+    },
+    {
+      title: 'Khach Hang',
+      dataIndex: 'tenKH',
+      key: 'tenKH',
+    },
+    {
+      title: 'Goi Tiec',
+      dataIndex: 'tenGoi',
+      key: 'tenGoi',
+    },
+    {
+      title: 'Ngay To Chuc',
+      dataIndex: 'ngayToChuc',
+      key: 'ngayToChuc',
+      render: (date: string) => new Date(date).toLocaleDateString(),
+    },
+    {
+      title: 'So Nguoi',
+      dataIndex: 'soLuongNguoi',
+      key: 'soLuongNguoi',
+    },
+    {
+      title: 'Tong Tien',
+      dataIndex: 'tongTien',
+      key: 'tongTien',
+      render: (amount: number) => `${amount.toLocaleString()}d`,
+    },
+    {
+      title: 'Trang Thai',
+      dataIndex: 'trangThai',
+      key: 'trangThai',
+      render: (status: string) => (
+        <Tag color={status === 'DA_DUNG' ? 'green' : 'orange'}>
+          {status === 'DA_DUNG' ? 'Da Dung' : 'Chua Dung'}
+        </Tag>
+      ),
+    },
+  ]
+
   return (
-    <div style={{ padding: '40px 20px', maxWidth: '1400px', margin: '0 auto' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '40px', fontSize: '36px' }}>
-        Gói Tiệc Karaoke
-      </h1>
-
-      <Row gutter={[24, 24]}>
-        {packages.map((pkg) => (
-          <Col xs={24} sm={12} lg={6} key={pkg.id}>
-            <Card
-              hoverable
-              style={{
-                height: '100%',
-                border: '1px solid #e8e8e8',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-              }}
-              bodyStyle={{ padding: '20px' }}
-              cover={
-                <div
-                  style={{
-                    background: getPackageColor(pkg.id),
-                    height: '180px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                  }}
-                >
-                  {getPackageIcon(pkg.image)}
-                  {pkg.id === 3 && (
-                    <Tag 
-                      color="gold" 
-                      style={{ 
-                        position: 'absolute', 
-                        top: '12px', 
-                        right: '12px',
-                        fontWeight: 'bold',
-                        fontSize: '11px'
-                      }}
-                    >
-                      PHỔ BIẾN
-                    </Tag>
-                  )}
-                </div>
-              }
-            >
-              <h3 style={{ 
-                fontSize: '20px', 
-                fontWeight: 'bold', 
-                marginBottom: '8px',
-                color: '#262626'
-              }}>
-                {pkg.name}
-              </h3>
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ 
-                  color: '#8c8c8c', 
-                  fontSize: '14px', 
-                  lineHeight: '1.6',
-                  minHeight: '42px'
-                }}>
-                  {pkg.description}
-                </p>
-              </div>
-
-              <div
-                style={{
-                  marginBottom: '20px',
-                  padding: '16px',
-                  background: 'linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)',
-                  borderRadius: '10px',
-                  border: '1px solid #e8e8e8',
-                }}
-              >
-                <p style={{ margin: 0 }}>
-                  <strong style={{ 
-                    color: '#1890ff', 
-                    fontSize: '24px',
-                    fontWeight: '700'
-                  }}>
-                    {pkg.price.toLocaleString('vi-VN')} đ
-                  </strong>
-                </p>
-                <p style={{ 
-                  fontSize: '13px', 
-                  color: '#8c8c8c',
-                  margin: '4px 0 0 0'
-                }}>
-                  {pkg.duration}h • {pkg.capacity} người
-                </p>
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{ 
-                  fontSize: '13px', 
-                  fontWeight: '600', 
-                  marginBottom: '12px',
-                  color: '#262626'
-                }}>
-                  Dịch vụ bao gồm:
-                </p>
-                <div style={{ 
-                  background: '#fafafa',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #f0f0f0'
-                }}>
-                  {pkg.services.map((service, idx) => (
-                    <p key={idx} style={{ 
-                      fontSize: '13px', 
-                      color: '#595959', 
-                      margin: '6px 0',
-                      paddingLeft: '4px',
-                      lineHeight: '1.5'
-                    }}>
-                      <span style={{ color: '#52c41a', marginRight: '8px', fontWeight: 'bold' }}>✓</span>
-                      {service}
-                    </p>
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                type="primary"
-                block
-                size="large"
-                onClick={() => handleBooking(pkg)}
-                style={{ 
-                  background: '#1890ff',
-                  borderColor: '#1890ff',
-                  height: '44px',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
-                }}
-              >
-                Đặt Tiệc
-              </Button>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      {/* Booking Modal */}
-      <Modal
-        title={`Đặt Tiệc - ${selectedPackage?.name}`}
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-        width={600}
+    <div style={{ 
+      padding: '40px 20px', 
+      maxWidth: '1200px', 
+      margin: '0 auto',
+      minHeight: 'calc(100vh - 200px)'
+    }}>
+      <Card 
+        title="🎊 Dat Tiec Karaoke" 
+        className="form-card"
+        style={{
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        }}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <h4>Thông Tin Liên Hệ</h4>
-          <Form.Item label="Tên Người Đặt" name="name" rules={[{ required: true }]}>
-            <Input prefix={<UserOutlined />} placeholder="Nhập tên" />
-          </Form.Item>
+        <Alert
+          message="Huong dan dat tiec"
+          description="1. Chon goi tiec phu hop | 2. Nhap so luong khach | 3. Chon sanh tiec (tu dong loc theo so nguoi) | 4. Chon ngay to chuc | 5. Xac nhan dat tiec"
+          type="info"
+          showIcon
+          style={{ marginBottom: '20px' }}
+        />
 
-          <Form.Item label="Điện Thoại" name="phone" rules={[{ required: true }]}>
-            <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại" />
-          </Form.Item>
-
-          <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}>
-            <Input type="email" placeholder="Nhập email" />
-          </Form.Item>
-
-          <Divider />
-
-          <h4>Thông Tin Tiệc</h4>
-          <Form.Item label="Ngày Tổ Chức" name="date" rules={[{ required: true }]}>
-            <DatePicker
-              disabledDate={(current) => current && current < dayjs().startOf('day')}
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-
-          <Form.Item label="Giờ Bắt Đầu" name="time" rules={[{ required: true }]}>
-            <Select
-              placeholder="Chọn giờ"
-              options={Array.from({ length: 9 }, (_, i) => ({
-                label: `${18 + i}:00`,
-                value: `${18 + i}:00`,
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item label="Số Khách" name="guests" rules={[{ required: true }]}>
-            <InputNumber
-              min={1}
-              max={selectedPackage?.capacity || 100}
-              placeholder="Số khách dự kiến"
-            />
-          </Form.Item>
-
-          <Form.Item label="Ghi Chú" name="notes">
-            <Input.TextArea rows={3} placeholder="Ghi chú thêm (yêu cầu đặc biệt, ...)" />
-          </Form.Item>
-
-          <Divider />
-
-          <h4>Dịch Vụ Bổ Sung</h4>
-          <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }}>
-            {availableAddOns.map((ao) => (
-              <Checkbox
-                key={ao.id}
-                checked={addOns.includes(ao.id)}
-                onChange={() => handleAddOnChange(ao.id)}
-              >
-                {ao.name} +{ao.price.toLocaleString('vi-VN')}đ
-              </Checkbox>
-            ))}
-          </Space>
-
-          <Divider />
-
-          <div
-            style={{
-              padding: '16px',
-              background: '#f5f5f5',
-              borderRadius: '8px',
-              marginBottom: '20px',
-            }}
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onCreateBooking}
+        >
+          <Form.Item
+            label="Ma Khach Hang"
+            name="maKhachHang"
+            rules={[{ required: true, message: 'Vui long nhap ma khach hang' }]}
+            tooltip="Neu da dang nhap, ma khach hang se tu dong dien vao"
           >
-            <div style={{ marginBottom: '8px' }}>
-              <p>
-                Gói {selectedPackage?.name}:{' '}
-                <strong>{selectedPackage?.price.toLocaleString('vi-VN')} đ</strong>
-              </p>
-            </div>
-            {addOns.length > 0 && (
-              <div style={{ marginBottom: '8px' }}>
-                <p>
-                  Dịch vụ bổ sung:{' '}
-                  <strong>
-                    {availableAddOns
-                      .filter((ao) => addOns.includes(ao.id))
-                      .reduce((sum, ao) => sum + ao.price, 0)
-                      .toLocaleString('vi-VN')}{' '}
-                    đ
-                  </strong>
-                </p>
-              </div>
-            )}
-            <Divider style={{ margin: '8px 0' }} />
-            <p>
-              <strong style={{ fontSize: '16px', color: '#667eea' }}>
-                Tổng cộng: {calculateTotal().toLocaleString('vi-VN')} đ
-              </strong>
-            </p>
-          </div>
+            <InputNumber 
+              placeholder="Nhap ma khach hang" 
+              style={{ width: '100%' }}
+              disabled={isAuthenticated && !!user?.maKhachHang}
+            />
+          </Form.Item>
 
-          <Button type="primary" htmlType="submit" block size="large" loading={loading}>
-            Xác Nhận Đặt Tiệc
-          </Button>
+          <Form.Item
+            label="Goi Tiec"
+            name="maGoiTiec"
+            rules={[{ required: true, message: 'Vui long chon goi tiec' }]}
+            tooltip="Chon goi tiec phu hop voi ngan sach cua ban"
+          >
+            <Select 
+              placeholder="Chon goi tiec" 
+              loading={partyPackages.length === 0}
+              onChange={(value) => {
+                const pkg = partyPackages.find(p => p.maGoi === value)
+                setSelectedPackage(pkg || null)
+              }}
+            >
+              {partyPackages.map(pkg => (
+                <Option key={pkg.maGoi} value={pkg.maGoi}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{pkg.tenGoi}</span>
+                    <strong style={{ color: '#1890ff' }}>{pkg.giaTronGoi.toLocaleString()}d/nguoi</strong>
+                  </div>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="So Luong Khach Du Kien"
+            name="soLuongNguoiDuKien"
+            rules={[
+              { required: true, message: 'Vui long nhap so luong nguoi' },
+              { type: 'number', min: 10, message: 'Toi thieu 10 nguoi' }
+            ]}
+            tooltip="Nhap so nguoi du kien tham gia tiec"
+          >
+            <InputNumber 
+              placeholder="Nhap so luong nguoi (toi thieu 10)" 
+              style={{ width: '100%' }}
+              min={10}
+              onChange={(value) => setExpectedGuests(value || 0)}
+            />
+          </Form.Item>
+
+          {expectedGuests > 0 && filteredHalls.length === 0 && (
+            <Alert
+              message="Khong co sanh phu hop"
+              description={`Khong tim thay sanh tiec voi suc chua ${expectedGuests} nguoi. Vui long giam so nguoi hoac lien he de dat sanh rieng.`}
+              type="warning"
+              showIcon
+              style={{ marginBottom: '16px' }}
+            />
+          )}
+
+          <Form.Item
+            label="Sanh Tiec"
+            name="maSanh"
+            rules={[{ required: true, message: 'Vui long chon sanh tiec' }]}
+            tooltip="Chi hien thi cac sanh co suc chua phu hop"
+          >
+            <Select 
+              placeholder={expectedGuests > 0 ? `Chon sanh tiec (du ${expectedGuests} nguoi)` : "Vui long nhap so nguoi truoc"} 
+              loading={banquetHalls.length === 0}
+              disabled={expectedGuests === 0}
+              onChange={(value) => {
+                const hall = banquetHalls.find(h => h.maSanh === value)
+                setSelectedHall(hall || null)
+              }}
+            >
+              {filteredHalls.map(hall => (
+                <Option key={hall.maSanh} value={hall.maSanh}>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>{hall.tenSanh}</div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      Suc chua: {hall.sucChua} nguoi | Dien tich: {hall.dienTich}m² | 
+                      <span style={{ color: '#1890ff', fontWeight: 'bold' }}> {hall.giaThue.toLocaleString()}d</span>
+                    </div>
+                    {hall.moTa && <div style={{ fontSize: '11px', color: '#999' }}>{hall.moTa}</div>}
+                  </div>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Ngay To Chuc"
+            name="ngayToChuc"
+            rules={[
+              { required: true, message: 'Vui long chon ngay to chuc' },
+              {
+                validator: (_, value) => {
+                  if (value && value.isBefore(dayjs(), 'day')) {
+                    return Promise.reject('Ngay to chuc phai sau ngay hom nay')
+                  }
+                  return Promise.resolve()
+                }
+              }
+            ]}
+            tooltip="Chon ngay to chuc tiec (phai tu ngay mai tro di)"
+          >
+            <DatePicker 
+              style={{ width: '100%' }} 
+              format="DD/MM/YYYY"
+              disabledDate={(current) => current && current < dayjs().startOf('day')}
+              placeholder="Chon ngay to chuc"
+            />
+          </Form.Item>
+
+          {estimatedTotal > 0 && (
+            <>
+              <Divider />
+              <Card 
+                size="small" 
+                style={{ 
+                  backgroundColor: '#e6f7ff', 
+                  marginBottom: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid #91d5ff'
+                }}
+              >
+                <Descriptions title="Du Toan Chi Phi" column={1} size="small">
+                  <Descriptions.Item label="Goi tiec">
+                    {selectedPackage?.giaTronGoi.toLocaleString()}d x {expectedGuests} nguoi = 
+                    <strong style={{ color: '#1890ff' }}> {(selectedPackage!.giaTronGoi * expectedGuests).toLocaleString()}d</strong>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thue sanh tiec">
+                    <strong style={{ color: '#1890ff' }}>{selectedHall?.giaThue.toLocaleString()}d</strong>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Tong cong">
+                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#ff4d4f' }}>
+                      {estimatedTotal.toLocaleString()}d
+                    </span>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Dat coc (20%)">
+                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#52c41a' }}>
+                      {(estimatedTotal * 0.2).toLocaleString()}d
+                    </span>
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+            </>
+          )}
+
+          <Form.Item>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={loading} 
+              block 
+              size="large"
+              style={{ marginBottom: '10px' }}
+              disabled={!estimatedTotal}
+            >
+              {estimatedTotal > 0 ? `Xac Nhan Dat Tiec - ${estimatedTotal.toLocaleString()}d` : 'Dat Tiec'}
+            </Button>
+            <Button
+              type="dashed"
+              onClick={fetchBookingList}
+              loading={loading}
+              block
+            >
+              Xem Lich Su Dat Tiec
+            </Button>
+          </Form.Item>
         </Form>
-      </Modal>
+
+        {bookingResult && (
+          <Card 
+            title="✅ Dat Tiec Thanh Cong!" 
+            style={{ 
+              marginTop: '20px', 
+              borderColor: '#52c41a',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(82,196,65,0.2)'
+            }}
+            styles={{ body: { backgroundColor: '#f6ffed' } }}
+          >
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Ma Don Dat">{bookingResult.maDonDatTiec}</Descriptions.Item>
+              <Descriptions.Item label="Khach Hang">{bookingResult.tenKH}</Descriptions.Item>
+              <Descriptions.Item label="Goi Tiec">{bookingResult.tenGoi}</Descriptions.Item>
+              <Descriptions.Item label="Ngay To Chuc">
+                {new Date(bookingResult.ngayToChuc).toLocaleDateString('vi-VN')}
+              </Descriptions.Item>
+              <Descriptions.Item label="So Nguoi">{bookingResult.soLuongNguoi} nguoi</Descriptions.Item>
+              <Descriptions.Item label="Tong Tien">
+                <strong style={{ fontSize: '16px', color: '#1890ff' }}>
+                  {bookingResult.tongTien.toLocaleString()}d
+                </strong>
+              </Descriptions.Item>
+            </Descriptions>
+            <Alert
+              message="Luu y"
+              description="Vui long thanh toan dat coc 20% trong vong 24h de giu cho. Lien he: 0123-456-789"
+              type="success"
+              showIcon
+              style={{ marginTop: '16px' }}
+            />
+          </Card>
+        )}
+
+        {showList && bookingList.length > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <Divider />
+            <h3>📋 Lich Su Dat Tiec Cua Ban:</h3>
+            <Table
+              columns={columns}
+              dataSource={bookingList}
+              rowKey="maDonDatTiec"
+              pagination={{ pageSize: 5 }}
+              size="small"
+            />
+          </div>
+        )}
+
+        {showList && bookingList.length === 0 && (
+          <Alert
+            message="Chua co don dat tiec nao"
+            description="Ban chua co lich su dat tiec. Hay tao don dat tiec dau tien!"
+            type="info"
+            showIcon
+            style={{ marginTop: '20px' }}
+          />
+        )}
+      </Card>
     </div>
   )
 }
+

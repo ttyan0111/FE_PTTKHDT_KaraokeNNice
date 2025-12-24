@@ -165,19 +165,55 @@ export interface ApDungUuDaiResponse {
 
 // Party Booking / Đặt Tiệc
 export interface DatTiecRequest {
-  maKhachHang: number
-  maGoiTiec: number
+  maKH: number
+  maGoi: number
+  maSanh?: number
   ngayToChuc: string
-  soLuongNguoiDuKien: number
+  soLuongNguoi: number
+  ghiChu?: string
 }
 
 export interface DatTiecResponse {
   maDonDatTiec: number
-  tenKhachHang: string
-  tenGoiTiec: string
+  maKH: number
+  tenKH: string
+  maGoi: number
+  tenGoi: string
   ngayToChuc: string
-  soLuongNguoiDuKien: number
+  soLuongNguoi: number
   tongTien: number
+  tienCoc: number
+  trangThai: string
+}
+
+export interface GoiTiecResponse {
+  maGoi: number
+  tenGoi: string
+  giaTronGoi: number
+  soLuongNguoiToiThieu?: number
+  soLuongNguoiToiDa?: number
+  moTa?: string
+  danhSachMonAn?: string
+  danhSachDichVu?: string
+}
+
+export interface SanhTiecResponse {
+  maSanh: number
+  tenSanh: string
+  sucChua: number
+  dienTich: number
+  giaThue: number
+  trangThai: string
+  moTa?: string
+}
+
+export interface HoanCocResponse {
+  maDonDatTiec: number
+  tienCocDaThanhToan: number
+  soNgayConLai: number
+  tyLeHoan: number
+  tienDuocHoan: number
+  chiTietChinhSach: string
 }
 
 // Member Registration / Đăng Ký Thành Viên
