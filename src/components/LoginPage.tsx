@@ -20,7 +20,7 @@ const LoginPage: React.FC = () => {
     const { login, isLoading: authLoading, user } = useAuth();
     const [showPassword, setShowPassword] = React.useState<boolean>(false);
     const [loginMode, setLoginMode] = React.useState<'user' | 'admin' | 'employee'>('user');
-    const [employeeRole, setEmployeeRole] = React.useState<'accountant' | 'receptionist' | 'staff'>('receptionist');
+    const [employeeRole, setEmployeeRole] = React.useState<'KeToan' | 'TiepTan' | 'Bep' | 'PhucVu'>('TiepTan');
     const [formData, setFormData] = React.useState<FormData>({ userId: '', password: '' });
     const [errors, setErrors] = React.useState<Errors>({ userId: false, password: false });
     const [rememberMe, setRememberMe] = React.useState<boolean>(false);
@@ -29,8 +29,20 @@ const LoginPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('🔐 Form submitted - preventDefault called');
+        
         setIsLoading(true);
         setErrorMessage('');
+
+        console.log('🔐 Login attempt:', { 
+            userId: formData.userId, 
+            password: formData.password,
+            passwordLength: formData.password.length,
+            loginMode, 
+            employeeRole 
+        });
 
         // Validation
         const newErrors: Errors = {
@@ -41,38 +53,69 @@ const LoginPage: React.FC = () => {
 
         if (!newErrors.userId && !newErrors.password) {
             try {
+                console.log('📡 Calling login API with:', {
+                    tenDangNhap: formData.userId,
+                    matKhau: '***' + formData.password.slice(-3),
+                    actualPassword: formData.password
+                });
                 await login(formData.userId, formData.password);
+                console.log('✅ Login successful');
+                
+                // Validate chức vụ nếu là nhân viên
+                const userStr = localStorage.getItem('authUser');
+                if (userStr) {
+                    const userData = JSON.parse(userStr);
+                    
+                    // Kiểm tra nếu đang ở mode employee nhưng không phải NHAN_VIEN
+                    if (loginMode === 'employee' && userData.loaiTaiKhoan !== 'NHAN_VIEN') {
+                        setErrorMessage('Tài khoản này không phải là nhân viên!');
+                        message.error('Tài khoản này không phải là nhân viên!');
+                        setIsLoading(false);
+                        return;
+                    }
+                    
+                    // Kiểm tra chức vụ có khớp không (nếu là nhân viên)
+                    if (loginMode === 'employee' && userData.chucVu !== employeeRole) {
+                        const roleNames: Record<string, string> = {
+                            'KeToan': 'Kế Toán',
+                            'TiepTan': 'Tiếp Tân',
+                            'Bep': 'Bếp',
+                            'PhucVu': 'Phục Vụ'
+                        };
+                        setErrorMessage(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
+                        message.error(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
+                        setIsLoading(false);
+                        return;
+                    }
+                }
+                
                 message.success('Đăng nhập thành công! 🎤');
                 
-                // Auto-redirect dựa trên loại tài khoản
+                // Redirect về homepage sau khi đăng nhập
                 setTimeout(() => {
-                    const userStr = localStorage.getItem('authUser');
-                    
-                    if (userStr) {
-                        try {
-                            const userData = JSON.parse(userStr);
-                            console.log('User data:', userData);
-                            
-                            // Nếu là NHAN_VIEN -> /admin, KHACH_HANG -> /
-                            if (userData.loaiTaiKhoan === 'NHAN_VIEN') {
-                                console.log('Redirecting to /admin');
-                                window.location.href = '/admin';
-                            } else {
-                                console.log('Redirecting to /');
-                                window.location.href = '/';
-                            }
-                        } catch (e) {
-                            console.error('Failed to parse user data:', e);
-                            window.location.href = '/';
-                        }
-                    } else {
-                        console.warn('No user data in localStorage');
-                        window.location.href = '/';
-                    }
+                    navigate('/');
                 }, 800);
             } catch (error: any) {
-                console.error('Login error:', error);
-                const errorMsg = error?.response?.data?.message || error?.response?.data || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+                console.error('❌ Login error:', error);
+                console.error('Error details:', {
+                    message: error?.message,
+                    response: error?.response,
+                    responseData: error?.response?.data,
+                    status: error?.response?.status
+                });
+                
+                let errorMsg = 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+                
+                if (error?.response?.data?.message) {
+                    errorMsg = error.response.data.message;
+                } else if (error?.response?.data) {
+                    errorMsg = typeof error.response.data === 'string' 
+                        ? error.response.data 
+                        : JSON.stringify(error.response.data);
+                } else if (error?.message) {
+                    errorMsg = error.message;
+                }
+                
                 setErrorMessage(errorMsg);
                 message.error(errorMsg);
                 setIsLoading(false);
@@ -263,20 +306,20 @@ const LoginPage: React.FC = () => {
                                         </label>
                                         <div style={{
                                             display: 'grid',
-                                            gridTemplateColumns: '1fr 1fr 1fr',
+                                            gridTemplateColumns: '1fr 1fr',
                                             gap: '8px'
                                         }}>
                                             <button
                                                 type="button"
-                                                onClick={() => setEmployeeRole('accountant')}
+                                                onClick={() => setEmployeeRole('KeToan')}
                                                 style={{
                                                     padding: '8px',
                                                     border: '1px solid rgba(255,255,255,0.2)',
                                                     borderRadius: '6px',
-                                                    backgroundColor: employeeRole === 'accountant' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
+                                                    backgroundColor: employeeRole === 'KeToan' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
                                                     color: '#fff',
                                                     cursor: 'pointer',
-                                                    fontWeight: employeeRole === 'accountant' ? 'bold' : 'normal',
+                                                    fontWeight: employeeRole === 'KeToan' ? 'bold' : 'normal',
                                                     transition: 'all 0.3s',
                                                     fontSize: '12px'
                                                 }}
@@ -285,15 +328,15 @@ const LoginPage: React.FC = () => {
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setEmployeeRole('receptionist')}
+                                                onClick={() => setEmployeeRole('TiepTan')}
                                                 style={{
                                                     padding: '8px',
                                                     border: '1px solid rgba(255,255,255,0.2)',
                                                     borderRadius: '6px',
-                                                    backgroundColor: employeeRole === 'receptionist' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
+                                                    backgroundColor: employeeRole === 'TiepTan' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
                                                     color: '#fff',
                                                     cursor: 'pointer',
-                                                    fontWeight: employeeRole === 'receptionist' ? 'bold' : 'normal',
+                                                    fontWeight: employeeRole === 'TiepTan' ? 'bold' : 'normal',
                                                     transition: 'all 0.3s',
                                                     fontSize: '12px'
                                                 }}
@@ -302,20 +345,37 @@ const LoginPage: React.FC = () => {
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setEmployeeRole('staff')}
+                                                onClick={() => setEmployeeRole('Bep')}
                                                 style={{
                                                     padding: '8px',
                                                     border: '1px solid rgba(255,255,255,0.2)',
                                                     borderRadius: '6px',
-                                                    backgroundColor: employeeRole === 'staff' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
+                                                    backgroundColor: employeeRole === 'Bep' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
                                                     color: '#fff',
                                                     cursor: 'pointer',
-                                                    fontWeight: employeeRole === 'staff' ? 'bold' : 'normal',
+                                                    fontWeight: employeeRole === 'Bep' ? 'bold' : 'normal',
                                                     transition: 'all 0.3s',
                                                     fontSize: '12px'
                                                 }}
                                             >
-                                                🍴 NV Thường
+                                                👨‍🍳 Bếp
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEmployeeRole('PhucVu')}
+                                                style={{
+                                                    padding: '8px',
+                                                    border: '1px solid rgba(255,255,255,0.2)',
+                                                    borderRadius: '6px',
+                                                    backgroundColor: employeeRole === 'PhucVu' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    fontWeight: employeeRole === 'PhucVu' ? 'bold' : 'normal',
+                                                    transition: 'all 0.3s',
+                                                    fontSize: '12px'
+                                                }}
+                                            >
+                                                🍽️ Phục Vụ
                                             </button>
                                         </div>
                                         <p style={{
@@ -325,9 +385,10 @@ const LoginPage: React.FC = () => {
                                             marginBottom: 0,
                                             fontStyle: 'italic'
                                         }}>
-                                            {employeeRole === 'accountant' && '→ Quản lý tài chính, thanh toán, báo cáo'}
-                                            {employeeRole === 'receptionist' && '→ Đặt phòng, đặt tiệc, check-in khách'}
-                                            {employeeRole === 'staff' && '→ Bếp/Bar, phục vụ, hỗ trợ'}
+                                            {employeeRole === 'KeToan' && '→ Quản lý tài chính, thanh toán, báo cáo'}
+                                            {employeeRole === 'TiepTan' && '→ Đặt phòng, đặt tiệc, check-in khách'}
+                                            {employeeRole === 'Bep' && '→ Chế biến món ăn, quản lý bếp'}
+                                            {employeeRole === 'PhucVu' && '→ Phục vụ khách hàng, order đồ ăn'}
                                         </p>
                                     </div>
                                 )}

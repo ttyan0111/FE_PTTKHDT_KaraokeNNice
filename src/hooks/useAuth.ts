@@ -40,16 +40,31 @@ export const useAuth = (): UseAuthReturn => {
   const login = useCallback(async (tenDangNhap: string, matKhau: string) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.login({
+      console.log('🔹 useAuth.login() called with:', {
+        tenDangNhap,
+        matKhau: '***' + matKhau.slice(-3),
+        matKhauLength: matKhau.length,
+        fullMatKhau: matKhau
+      })
+      
+      const requestPayload = {
         tenDangNhap,
         matKhau,
-      })
+      }
+      
+      console.log('🔹 Request payload:', requestPayload)
+      
+      const response = await apiClient.login(requestPayload)
+      
+      console.log('✅ Login response:', response)
 
       const authUser: AuthUser = {
         maTaiKhoan: response.maTaiKhoan,
         tenDangNhap: response.tenDangNhap,
         loaiTaiKhoan: response.loaiTaiKhoan,
         maKhachHang: response.maKhachHang,
+        maNhanVien: response.maNhanVien,
+        chucVu: response.chucVu,
         hoTen: response.hoTen,
       }
 

@@ -65,8 +65,13 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ApiErrorResponse>) => {
         if (error.response?.status === 401) {
-          localStorage.removeItem('authToken')
-          window.location.href = '/login'
+          // Chỉ redirect nếu KHÔNG phải đang ở trang login/register
+          const currentPath = window.location.pathname
+          if (currentPath !== '/login' && currentPath !== '/register') {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('authUser')
+            window.location.href = '/login'
+          }
         }
         return Promise.reject(error)
       }
@@ -75,7 +80,13 @@ class ApiClient {
 
   // Auth APIs
   async login(data: LoginRequest): Promise<LoginResponse> {
+    console.log('🔷 api.login() called with:', {
+      ...data,
+      matKhau: '***' + data.matKhau.slice(-3),
+      fullData: data
+    })
     const response = await this.client.post('/auth/login', data)
+    console.log('🔷 api.login() response:', response.data)
     return response.data
   }
 

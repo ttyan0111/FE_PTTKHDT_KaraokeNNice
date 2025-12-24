@@ -63,31 +63,37 @@ export const Header: React.FC<HeaderProps> = () => {
     navigate('/')
   }
 
-  // User dropdown menu items
-  const userMenuItems: MenuProps['items'] = [
-    {
-      key: 'profile',
-      label: 'Hồ Sơ Cá Nhân',
-      icon: <UserOutlined />,
-      onClick: () => navigate('/profile'),
-    },
-    {
-      key: 'settings',
-      label: 'Đổi mật khẩu',
-      icon: <UserOutlined />,
-      onClick: () => navigate('/settings'),
-    },
-    {
-      type: 'divider' as const,
-    },
-    {
-      key: 'logout',
-      label: 'Đăng Xuất',
-      icon: <LogoutOutlined />,
-      onClick: handleLogout,
-      danger: true,
-    },
-  ]
+  // User dropdown menu items - Khác nhau tùy theo loại tài khoản
+  const userMenuItems: MenuProps['items'] = user?.loaiTaiKhoan === 'NHAN_VIEN' 
+    ? [
+        // Nếu là nhân viên/admin - hiển thị cả "Quản lý" và "Đăng xuất"
+        {
+          key: 'admin',
+          label: 'Quản Lý',
+          icon: <UserOutlined />,
+          onClick: () => navigate('/admin'),
+        },
+        {
+          type: 'divider' as const,
+        },
+        {
+          key: 'logout',
+          label: 'Đăng Xuất',
+          icon: <LogoutOutlined />,
+          onClick: handleLogout,
+          danger: true,
+        },
+      ]
+    : [
+        // Nếu là khách hàng - chỉ hiển thị "Đăng xuất"
+        {
+          key: 'logout',
+          label: 'Đăng Xuất',
+          icon: <LogoutOutlined />,
+          onClick: handleLogout,
+          danger: true,
+        },
+      ]
 
   return (
     <>
@@ -122,18 +128,31 @@ export const Header: React.FC<HeaderProps> = () => {
           <div className="auth-buttons">
             {authState && user ? (
               // After login - show avatar + dropdown
-              <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                  <Avatar
-                    size={40}
-                    style={{ backgroundColor: '#c084fc' }}
-                    icon={<UserOutlined />}
-                  />
-                  <span style={{ color: '#fff', fontWeight: '500' }}>
-                    {user.hoTen || user.tenDangNhap}
-                  </span>
-                </div>
-              </Dropdown>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '10px', 
+                    cursor: 'pointer',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    transition: 'background 0.3s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <Avatar
+                      size={40}
+                      style={{ backgroundColor: '#c084fc' }}
+                      icon={<UserOutlined />}
+                    />
+                    <span style={{ color: '#fff', fontWeight: '500' }}>
+                      {user.hoTen || user.tenDangNhap}
+                    </span>
+                  </div>
+                </Dropdown>
+              </div>
             ) : (
               // Before login - show login/register buttons
               <>
