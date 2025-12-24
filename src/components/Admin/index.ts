@@ -6,3 +6,4 @@ export { MemberManagement } from './MemberManagement'
 export { RoomManagement }
 export { OrderManagement } from './OrderManagement'
 export { PromotionManagement } from './PromotionManagement'
+export { InvoiceManagement } from './InvoiceManagement'

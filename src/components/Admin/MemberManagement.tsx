@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Table, Button, Modal, Form, Input, Select, InputNumber, Popconfirm, message } from 'antd'
+import { Card, Table, Button, Modal, Form, Input, Select, Popconfirm, message } from 'antd'
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { apiClient } from '../../services/api'
 
@@ -8,9 +8,9 @@ interface Member {
   name: string
   email: string
   phone: string
-  tier: string
-  points: number
-  totalSpent: number
+  chucVu: string
+  heSoLuong: number
+  tyLeThuongDoanhThu: number
   joinDate: string
 }
 
@@ -50,9 +50,9 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
               name: item.hoTen || item.tenNV || item.name || '',
               email: item.email || '',
               phone: item.sdt || item.phone || '',
-              tier: item.chucVu || item.tier || 'Bronze',
-              points: item.points || 0,
-              totalSpent: item.totalSpent || 0,
+              chucVu: item.chucVu || item.tier || 'Nhân Viên',
+              heSoLuong: item.heSoLuong || 1,
+              tyLeThuongDoanhThu: item.tyLeThuongDoanhThu || 0,
               joinDate: item.ngayVaoLam || item.joinDate || new Date().toISOString().split('T')[0],
             }
             console.log(`Mapped ${index}:`, mapped)
@@ -83,33 +83,25 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
     { title: 'Tên', dataIndex: 'name', key: 'name' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Phone', dataIndex: 'phone', key: 'phone' },
+    { title: 'Số Điện Thoại', dataIndex: 'phone', key: 'phone' },
     {
-      title: 'Tier',
-      dataIndex: 'tier',
-      key: 'tier',
-      render: (tier: string) => {
-        const colors: { [key: string]: string } = {
-          Gold: 'gold',
-          Silver: 'default',
-          Bronze: 'orange',
-          Platinum: 'purple',
-        }
-        return <span style={{ color: colors[tier] || '#000' }}>{tier}</span>
-      },
+      title: 'Chức Vụ',
+      dataIndex: 'chucVu',
+      key: 'chucVu',
     },
     {
-      title: 'Điểm',
-      dataIndex: 'points',
-      key: 'points',
-      sorter: (a: Member, b: Member) => a.points - b.points,
+      title: 'Hệ Số Lương',
+      dataIndex: 'heSoLuong',
+      key: 'heSoLuong',
+      render: (value: number) => value.toFixed(2),
     },
     {
-      title: 'Chi Tiêu',
-      dataIndex: 'totalSpent',
-      key: 'totalSpent',
-      render: (amount: number) => `${amount.toLocaleString('vi-VN')}đ`,
+      title: 'Tỷ Lệ Thưởng (%)',
+      dataIndex: 'tyLeThuongDoanhThu',
+      key: 'tyLeThuongDoanhThu',
+      render: (value: number) => `${value.toFixed(2)}%`,
     },
+  
     {
       title: 'Hành Động',
       key: 'action',
@@ -127,10 +119,17 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
             size="small"
           />
           <Popconfirm
-            title="Xóa thành viên?"
-            onConfirm={() => {
-              setMembers(members.filter((m) => m.id !== record.id))
-              message.success('Xóa thành công')
+            title="Xóa nhân viên?"
+            onConfirm={async () => {
+              try {
+                await apiClient.deleteEmployee(record.id)
+                setMembers(members.filter((m) => m.id !== record.id))
+                message.success('Xóa thành công')
+                await fetchMembersData()
+              } catch (error: any) {
+                const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra'
+                message.error(errorMsg)
+              }
             }}
           >
             <Button type="link" danger icon={<DeleteOutlined />} size="small" />
@@ -146,21 +145,25 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
       const requestData = {
         hoTen: values.name,
         email: values.email,
-        soDienThoai: values.phone,
+        sdt: values.phone,
+        matKhau: values.password,
+        chucVu: values.chucVu,
         diaChi: values.diaChi || '',
         cmndCccd: values.cmndCccd || '',
+        heSoLuong: values.heSoLuong || 1,
+        tyLeThuongDoanhThu: values.tyLeThuongDoanhThu || 0,
         ngaySinh: values.ngaySinh || new Date().toISOString().split('T')[0],
         gioiTinh: values.gioiTinh || 'Khác',
       }
 
       if (editingId) {
-        // Update existing member
-        await apiClient.updateMemberInfo(editingId, requestData)
+        // Update existing employee
+        await apiClient.updateEmployee(editingId, requestData)
         message.success('Cập nhật thành công')
       } else {
-        // Create new member
-        await apiClient.registerMember(requestData)
-        message.success('Thêm thành công')
+        // Create new employee
+        await apiClient.createEmployee(requestData)
+        message.success('Thêm nhân viên thành công')
       }
       setIsModalVisible(false)
       form.resetFields()
@@ -220,37 +223,46 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
       </Card>
 
       <Modal
-        title={editingId ? 'Chỉnh Sửa Thành Viên' : 'Thêm Thành Viên Mới'}
+        title={editingId ? 'Chỉnh Sửa Nhân Viên' : 'Thêm Nhân Viên Mới'}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onOk={() => form.submit()}
         confirmLoading={loading}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item label="Tên" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên' }]}>
-            <Input />
+          <Form.Item label="Tên Nhân Viên" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên' }]}>
+            <Input placeholder="Nhập tên nhân viên" />
           </Form.Item>
-          <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}>
-            <Input />
+          <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email', message: 'Email không hợp lệ' }]}>
+            <Input placeholder="example@email.com" />
           </Form.Item>
-          <Form.Item label="Điện Thoại" name="phone" rules={[{ required: true }]}>
-            <Input />
+          <Form.Item label="Số Điện Thoại" name="phone" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}>
+            <Input placeholder="09xxxxxxxx" />
           </Form.Item>
-          <Form.Item label="Tier" name="tier" rules={[{ required: true }]}>
+          {!editingId && (
+            <Form.Item label="Mật Khẩu" name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }, { min: 6, message: 'Mật khẩu ít nhất 6 ký tự' }]}>
+              <Input.Password placeholder="Nhập mật khẩu" />
+            </Form.Item>
+          )}
+          <Form.Item label="Chức Vụ" name="chucVu" rules={[{ required: true, message: 'Vui lòng chọn chức vụ' }]}>
             <Select
+              placeholder="Chọn chức vụ"
               options={[
-                { label: 'Bronze', value: 'Bronze' },
-                { label: 'Silver', value: 'Silver' },
-                { label: 'Gold', value: 'Gold' },
-                { label: 'Platinum', value: 'Platinum' },
+                { label: 'Lễ tân', value: 'Lễ tân' },
+                { label: 'Quản Lý', value: 'Quản Lý' },
+                { label: 'Kế toán', value: 'Kế toán' },
               ]}
             />
           </Form.Item>
-          <Form.Item label="Điểm Tích Lũy" name="points" rules={[{ required: true }]}>
-            <InputNumber min={0} />
+          <Form.Item label="Hệ Số Lương" name="heSoLuong" rules={[{ required: true, message: 'Vui lòng nhập hệ số lương' }]}>
+            <Input type="number" placeholder="1.0" step="0.01" />
+          </Form.Item>
+          <Form.Item label="Tỷ Lệ Thưởng Doanh Thu (%)" name="tyLeThuongDoanhThu" rules={[{ required: true, message: 'Vui lòng nhập tỷ lệ thưởng' }]}>
+            <Input type="number" placeholder="0" step="0.01" />
           </Form.Item>
         </Form>
       </Modal>
     </div>
   )
 }
+   

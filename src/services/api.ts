@@ -261,6 +261,44 @@ class ApiClient {
     return Array.isArray(data) ? data : []
   }
 
+  // Create new employee (nhân viên)
+  async createEmployee(data: any): Promise<any> {
+    const response = await this.client.post(
+      '/v1/quan-ly-tai-khoan-nhan-vien/tao-tai-khoan',
+      {
+        hoTen: data.hoTen,
+        email: data.email,
+        sdt: data.sdt,
+        chucVu: data.chucVu,
+        diaChi: data.diaChi,
+        cmndCccd: data.cmndCccd,
+        ngaySinh: data.ngaySinh,
+        gioiTinh: data.gioiTinh,
+      },
+      {
+        params: {
+          username: data.email,
+          password: data.matKhau,
+        },
+      }
+    )
+    return response.data
+  }
+
+  // Update employee (nhân viên)
+  async updateEmployee(maNV: number, data: any): Promise<any> {
+    const response = await this.client.put('/v1/quan-ly-tai-khoan-nhan-vien/cap-nhat', {
+      maNV,
+      ...data,
+    })
+    return response.data
+  }
+
+  // Delete employee (nhân viên)
+  async deleteEmployee(maNV: number): Promise<void> {
+    await this.client.delete(`/v1/quan-ly-tai-khoan-nhan-vien/vo-hieu-hoa/${maNV}`)
+  }
+
   // Room Type APIs (Loại Phòng)
   async getAllRoomTypes(): Promise<any[]> {
     const response = await this.client.get('/v1/loai-phong/tat-ca')
@@ -345,6 +383,70 @@ class ApiClient {
       params: { soNguoi, gioDat, gioKetThuc },
     })
     return response.data
+  }
+
+  // MatHang (Menu Items) APIs
+  async getAllMatHang(): Promise<any[]> {
+    const response = await this.client.get('/v1/mat-hang/tat-ca')
+    return response.data
+  }
+
+  async getMatHangByLoai(loaiHang: string): Promise<any[]> {
+    const response = await this.client.get('/v1/mat-hang/theo-loai', {
+      params: { loaiHang }
+    })
+    return response.data
+  }
+
+  async getMatHangById(maHang: number): Promise<any> {
+    const response = await this.client.get(`/v1/mat-hang/${maHang}`)
+    return response.data
+  }
+
+  async createMatHang(data: any): Promise<any> {
+    const response = await this.client.post('/v1/mat-hang/tao', data)
+    return response.data
+  }
+
+  async updateMatHang(data: any): Promise<any> {
+    const response = await this.client.put('/v1/mat-hang/cap-nhat', data)
+    return response.data
+  }
+
+  async deleteMatHang(maHang: number): Promise<void> {
+    await this.client.delete(`/v1/mat-hang/${maHang}`)
+  }
+
+  // HoaDon (Invoice) APIs
+  async getAllHoaDon(): Promise<any[]> {
+    const response = await this.client.get('/v1/hoa-don/tat-ca')
+    return response.data
+  }
+
+  async getHoaDonById(maHD: number): Promise<any> {
+    const response = await this.client.get(`/v1/hoa-don/${maHD}`)
+    return response.data
+  }
+
+  async getHoaDonByTrangThai(trangThai: string): Promise<any[]> {
+    const response = await this.client.get('/v1/hoa-don/theo-trang-thai', {
+      params: { trangThai }
+    })
+    return response.data
+  }
+
+  async createHoaDon(data: any): Promise<any> {
+    const response = await this.client.post('/v1/hoa-don/tao', data)
+    return response.data
+  }
+
+  async updateHoaDon(data: any): Promise<any> {
+    const response = await this.client.put('/v1/hoa-don/cap-nhat', data)
+    return response.data
+  }
+
+  async deleteHoaDon(maHD: number): Promise<void> {
+    await this.client.delete(`/v1/hoa-don/${maHD}`)
   }
 }
 
