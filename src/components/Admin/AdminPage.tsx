@@ -7,6 +7,7 @@ import {
   HomeOutlined,
   GiftOutlined,
   LogoutOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
@@ -18,6 +19,7 @@ import { OrderManagement } from './OrderManagement'
 import { PromotionManagement } from './PromotionManagement'
 import { MenuManagement } from './MenuManagement'
 import { InvoiceManagement } from './InvoiceManagement'
+import { PartyManagement } from './PartyManagement'
 
 const { Sider, Content } = Layout
 
@@ -105,6 +107,8 @@ export const AdminPage: React.FC = () => {
         return <OrderManagement orders={orders} />
       case 'promotions':
         return <PromotionManagement />
+      case 'parties':
+        return <PartyManagement />
       default:
         return <Dashboard memberCount={memberCount} roomCount={rooms.length} completedOrders={1} totalRevenue={15.5} orders={orders} />
     }
@@ -125,9 +129,11 @@ export const AdminPage: React.FC = () => {
             { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
             { key: 'members', icon: <UserOutlined />, label: 'Nhân Viên' },
             { key: 'roomtypes', icon: <HomeOutlined />, label: 'Loại Phòng' },
-            { key: 'rooms', icon: <HomeOutlined />, label: 'Phòng Hát' },            { key: 'menu', icon: <GiftOutlined />, label: 'Quản Lý Menu' },
+            { key: 'rooms', icon: <HomeOutlined />, label: 'Phòng Hát' },
+            { key: 'menu', icon: <GiftOutlined />, label: 'Quản Lý Menu' },
             { key: 'invoices', icon: <ShoppingCartOutlined />, label: 'Hóa Đơn' },
             { key: 'promotions', icon: <GiftOutlined />, label: 'Khuyến Mãi' },
+            { key: 'parties', icon: <CalendarOutlined />, label: 'Tiệc' },
           ]}
         />
         <div style={{ padding: '20px', marginTop: '20px' }}>

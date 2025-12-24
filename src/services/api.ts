@@ -16,6 +16,9 @@ import type {
   ApDungUuDaiResponse,
   DatTiecRequest,
   DatTiecResponse,
+  GoiTiecResponse,
+  SanhTiecResponse,
+  HoanCocResponse,
   MemberRegistrationRequest,
   MemberRegistrationResponse,
   DatPhongRequest,
@@ -179,12 +182,12 @@ class ApiClient {
 
   // Party Booking APIs
   async createPartyBooking(data: DatTiecRequest): Promise<DatTiecResponse> {
-    const response = await this.client.post('/dat-tiec', data)
+    const response = await this.client.post('/v1/dat-tiec', data)
     return response.data
   }
 
   async getPartyBookingDetail(maTiec: number): Promise<DatTiecResponse> {
-    const response = await this.client.get(`/dat-tiec/${maTiec}`)
+    const response = await this.client.get(`/v1/dat-tiec/${maTiec}`)
     return response.data
   }
 
@@ -192,13 +195,76 @@ class ApiClient {
     maTiec: number,
     data: DatTiecRequest,
   ): Promise<DatTiecResponse> {
-    const response = await this.client.put(`/dat-tiec/${maTiec}`, data)
+    const response = await this.client.put(`/v1/dat-tiec/${maTiec}`, data)
     return response.data
   }
 
-  async getPartyBookingList(trangThai: string): Promise<DatTiecResponse[]> {
-    const response = await this.client.get('/dat-tiec/danh-sach', {
+  async cancelPartyBooking(maTiec: number, lyDo: string): Promise<void> {
+    await this.client.delete(`/v1/dat-tiec/${maTiec}`, {
+      params: { lyDo },
+    })
+  }
+
+  async getPartyBookingList(trangThai?: string): Promise<DatTiecResponse[]> {
+    const response = await this.client.get('/v1/dat-tiec/danh-sach', {
       params: { trangThai },
+    })
+    return response.data
+  }
+
+  async calculateDepositRefund(maTiec: number): Promise<HoanCocResponse> {
+    const response = await this.client.get(`/v1/dat-tiec/tinh-hoan-coc/${maTiec}`)
+    return response.data
+  }
+
+  async processDeposit(maTiec: number, soTien: number, hinhThuc: string): Promise<void> {
+    await this.client.post('/v1/dat-tiec/thanh-toan-coc', null, {
+      params: { maTiec, soTien, hinhThuc },
+    })
+  }
+
+  async sendPartyConfirmation(maTiec: number): Promise<void> {
+    await this.client.post(`/v1/dat-tiec/gui-xac-nhan/${maTiec}`)
+  }
+
+  // Gói Tiệc APIs
+  async getAllPartyPackages(): Promise<GoiTiecResponse[]> {
+    const response = await this.client.get('/v1/goi-tiec')
+    return response.data
+  }
+
+  async getPartyPackageById(maGoi: number): Promise<GoiTiecResponse> {
+    const response = await this.client.get(`/v1/goi-tiec/${maGoi}`)
+    return response.data
+  }
+
+  // Sảnh Tiệc APIs
+  async getAllBanquetHalls(): Promise<SanhTiecResponse[]> {
+    const response = await this.client.get('/v1/sanh-tiec')
+    return response.data
+  }
+
+  async getBanquetHallById(maSanh: number): Promise<SanhTiecResponse> {
+    const response = await this.client.get(`/v1/sanh-tiec/${maSanh}`)
+    return response.data
+  }
+
+  async findAvailableBanquetHalls(
+    tuNgay: string,
+    denNgay: string,
+  ): Promise<SanhTiecResponse[]> {
+    const response = await this.client.get('/v1/dat-tiec/sanh-trong', {
+      params: { tuNgay, denNgay },
+    })
+    return response.data
+  }
+
+  async checkBanquetHallAvailability(
+    maSanh: number,
+    ngayToChuc: string,
+  ): Promise<boolean> {
+    const response = await this.client.get('/v1/dat-tiec/kiem-tra-sanh', {
+      params: { maSanh, ngayToChuc },
     })
     return response.data
   }
