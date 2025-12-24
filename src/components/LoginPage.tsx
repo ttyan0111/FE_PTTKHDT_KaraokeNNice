@@ -19,7 +19,8 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const { login, isLoading: authLoading, user } = useAuth();
     const [showPassword, setShowPassword] = React.useState<boolean>(false);
-    const [isAdminMode, setIsAdminMode] = React.useState<boolean>(false);
+    const [loginMode, setLoginMode] = React.useState<'user' | 'admin' | 'employee'>('user');
+    const [employeeRole, setEmployeeRole] = React.useState<'accountant' | 'receptionist' | 'staff'>('receptionist');
     const [formData, setFormData] = React.useState<FormData>({ userId: '', password: '' });
     const [errors, setErrors] = React.useState<Errors>({ userId: false, password: false });
     const [rememberMe, setRememberMe] = React.useState<boolean>(false);
@@ -171,14 +172,16 @@ const LoginPage: React.FC = () => {
                                 <div className="login-header">
                                     <h3 className="login-title">Chào mừng đến với NNice!</h3>
                                     <p className="login-subtitle">
-                                        {isAdminMode ? 'Đăng nhập Quản Trị' : 'Đăng nhập Người Dùng'}
+                                        {loginMode === 'admin' ? 'Đăng nhập Quản Trị' : 
+                                         loginMode === 'employee' ? 'Đăng nhập Nhân Viên' : 
+                                         'Đăng nhập Khách Hàng'}
                                     </p>
                                 </div>
 
-                                {/* Toggle Admin/User Mode */}
+                                {/* Toggle User/Admin/Employee Mode */}
                                 <div style={{
                                     display: 'flex',
-                                    marginBottom: '20px',
+                                    marginBottom: '16px',
                                     gap: '8px',
                                     backgroundColor: 'rgba(255,255,255,0.1)',
                                     padding: '4px',
@@ -186,39 +189,148 @@ const LoginPage: React.FC = () => {
                                 }}>
                                     <button
                                         type="button"
-                                        onClick={() => setIsAdminMode(false)}
+                                        onClick={() => setLoginMode('user')}
                                         style={{
                                             flex: 1,
                                             padding: '10px',
                                             border: 'none',
                                             borderRadius: '6px',
-                                            backgroundColor: !isAdminMode ? '#1890ff' : 'transparent',
+                                            backgroundColor: loginMode === 'user' ? '#1890ff' : 'transparent',
                                             color: '#fff',
                                             cursor: 'pointer',
-                                            fontWeight: !isAdminMode ? 'bold' : 'normal',
+                                            fontWeight: loginMode === 'user' ? 'bold' : 'normal',
                                             transition: 'all 0.3s',
+                                            fontSize: '13px'
                                         }}
                                     >
-                                        👤 Người Dùng
+                                        👤 Khách Hàng
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setIsAdminMode(true)}
+                                        onClick={() => setLoginMode('employee')}
                                         style={{
                                             flex: 1,
                                             padding: '10px',
                                             border: 'none',
                                             borderRadius: '6px',
-                                            backgroundColor: isAdminMode ? '#1890ff' : 'transparent',
+                                            backgroundColor: loginMode === 'employee' ? '#1890ff' : 'transparent',
                                             color: '#fff',
                                             cursor: 'pointer',
-                                            fontWeight: isAdminMode ? 'bold' : 'normal',
+                                            fontWeight: loginMode === 'employee' ? 'bold' : 'normal',
                                             transition: 'all 0.3s',
+                                            fontSize: '13px'
+                                        }}
+                                    >
+                                        👔 Nhân Viên
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLoginMode('admin')}
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            backgroundColor: loginMode === 'admin' ? '#1890ff' : 'transparent',
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                            fontWeight: loginMode === 'admin' ? 'bold' : 'normal',
+                                            transition: 'all 0.3s',
+                                            fontSize: '13px'
                                         }}
                                     >
                                         ⚙️ Quản Trị
                                     </button>
                                 </div>
+
+                                {/* Employee Role Selection (chỉ hiện khi chọn Nhân Viên) */}
+                                {loginMode === 'employee' && (
+                                    <div style={{
+                                        marginBottom: '20px',
+                                        backgroundColor: 'rgba(255,255,255,0.05)',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(255,255,255,0.1)'
+                                    }}>
+                                        <label style={{
+                                            display: 'block',
+                                            color: '#e9d5ff',
+                                            fontSize: '13px',
+                                            marginBottom: '8px',
+                                            fontWeight: '500'
+                                        }}>
+                                            Chọn vai trò:
+                                        </label>
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: '1fr 1fr 1fr',
+                                            gap: '8px'
+                                        }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEmployeeRole('accountant')}
+                                                style={{
+                                                    padding: '8px',
+                                                    border: '1px solid rgba(255,255,255,0.2)',
+                                                    borderRadius: '6px',
+                                                    backgroundColor: employeeRole === 'accountant' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    fontWeight: employeeRole === 'accountant' ? 'bold' : 'normal',
+                                                    transition: 'all 0.3s',
+                                                    fontSize: '12px'
+                                                }}
+                                            >
+                                                💼 Kế Toán
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEmployeeRole('receptionist')}
+                                                style={{
+                                                    padding: '8px',
+                                                    border: '1px solid rgba(255,255,255,0.2)',
+                                                    borderRadius: '6px',
+                                                    backgroundColor: employeeRole === 'receptionist' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    fontWeight: employeeRole === 'receptionist' ? 'bold' : 'normal',
+                                                    transition: 'all 0.3s',
+                                                    fontSize: '12px'
+                                                }}
+                                            >
+                                                📋 Tiếp Tân
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEmployeeRole('staff')}
+                                                style={{
+                                                    padding: '8px',
+                                                    border: '1px solid rgba(255,255,255,0.2)',
+                                                    borderRadius: '6px',
+                                                    backgroundColor: employeeRole === 'staff' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.05)',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    fontWeight: employeeRole === 'staff' ? 'bold' : 'normal',
+                                                    transition: 'all 0.3s',
+                                                    fontSize: '12px'
+                                                }}
+                                            >
+                                                🍴 NV Thường
+                                            </button>
+                                        </div>
+                                        <p style={{
+                                            fontSize: '11px',
+                                            color: '#d8b4fe',
+                                            marginTop: '8px',
+                                            marginBottom: 0,
+                                            fontStyle: 'italic'
+                                        }}>
+                                            {employeeRole === 'accountant' && '→ Quản lý tài chính, thanh toán, báo cáo'}
+                                            {employeeRole === 'receptionist' && '→ Đặt phòng, đặt tiệc, check-in khách'}
+                                            {employeeRole === 'staff' && '→ Bếp/Bar, phục vụ, hỗ trợ'}
+                                        </p>
+                                    </div>
+                                )}
 
                                 {/* Error Message */}
                                 {errorMessage && (

@@ -7,6 +7,7 @@ import {
   HomeOutlined,
   GiftOutlined,
   LogoutOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
@@ -16,6 +17,7 @@ import RoomManagement from './RoomManagement'
 import { RoomTypeManagement } from './RoomTypeManagement'
 import { OrderManagement } from './OrderManagement'
 import { PromotionManagement } from './PromotionManagement'
+import { PartyManagement } from './PartyManagement'
 
 const { Sider, Content } = Layout
 
@@ -99,6 +101,8 @@ export const AdminPage: React.FC = () => {
         return <OrderManagement orders={orders} />
       case 'promotions':
         return <PromotionManagement />
+      case 'parties':
+        return <PartyManagement />
       default:
         return <Dashboard memberCount={memberCount} roomCount={rooms.length} completedOrders={1} totalRevenue={15.5} orders={orders} />
     }
@@ -121,6 +125,7 @@ export const AdminPage: React.FC = () => {
             { key: 'roomtypes', icon: <HomeOutlined />, label: 'Loại Phòng' },
             { key: 'rooms', icon: <HomeOutlined />, label: 'Phòng Hát' },
             { key: 'orders', icon: <ShoppingCartOutlined />, label: 'Đơn Hàng' },
+            { key: 'parties', icon: <CalendarOutlined />, label: 'Đặt Tiệc' },
             { key: 'promotions', icon: <GiftOutlined />, label: 'Khuyến Mãi' },
           ]}
         />
