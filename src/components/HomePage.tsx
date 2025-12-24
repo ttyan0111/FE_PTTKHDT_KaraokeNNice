@@ -77,18 +77,38 @@ export const HomePage: React.FC = () => {
       {/* Statistics */}
       <div className="stats-section">
         <div className="stats-container">
-          <Row gutter={[32, 32]}>
+          <Row gutter={[48, 48]}>
             <Col xs={24} sm={12} md={6}>
-              <Statistic title="Phòng Hát" value={24} suffix="phòng" />
+              <Statistic 
+                title="Phòng Hát Cao Cấp" 
+                value={24} 
+                suffix="phòng"
+                valueStyle={{ fontSize: '36px' }}
+              />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <Statistic title="Khách Hàng" value={5843} suffix="+" />
+              <Statistic 
+                title="Khách Hàng Tin Dùng" 
+                value={5843} 
+                suffix="+"
+                valueStyle={{ fontSize: '36px' }}
+              />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <Statistic title="Đánh Giá" value={4.8} suffix="⭐" />
+              <Statistic 
+                title="Đánh Giá Trung Bình" 
+                value={4.8} 
+                suffix="⭐"
+                valueStyle={{ fontSize: '36px' }}
+              />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <Statistic title="Năm Hoạt Động" value={5} suffix="năm" />
+              <Statistic 
+                title="Kinh Nghiệm Phục Vụ" 
+                value={5} 
+                suffix="năm"
+                valueStyle={{ fontSize: '36px' }}
+              />
             </Col>
           </Row>
         </div>

@@ -50,7 +50,7 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
               name: item.hoTen || item.tenNV || item.name || '',
               email: item.email || '',
               phone: item.sdt || item.phone || '',
-              chucVu: item.chucVu || item.tier || 'Nhân Viên',
+              chucVu: item.chucVu || 'TiepTan', // Default to TiepTan if missing
               heSoLuong: item.heSoLuong || 1,
               tyLeThuongDoanhThu: item.tyLeThuongDoanhThu || 0,
               joinDate: item.ngayVaoLam || item.joinDate || new Date().toISOString().split('T')[0],
@@ -88,6 +88,16 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
       title: 'Chức Vụ',
       dataIndex: 'chucVu',
       key: 'chucVu',
+      render: (value: string) => {
+        const chucVuMap: Record<string, string> = {
+          'TiepTan': '📋 Tiếp Tân',
+          'KeToan': '💼 Kế Toán',
+          'Bep': '👨‍🍳 Bếp',
+          'PhucVu': '🍽️ Phục Vụ',
+          'Quản Trị Hệ Thống': '⚙️ Quản Trị Hệ Thống'
+        }
+        return chucVuMap[value] || value
+      }
     },
     {
       title: 'Hệ Số Lương',
@@ -113,7 +123,15 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
             icon={<EditOutlined />}
             onClick={() => {
               setEditingId(record.id)
-              form.setFieldsValue(record)
+              // Map record fields to form field names
+              form.setFieldsValue({
+                name: record.name,
+                email: record.email,
+                phone: record.phone,
+                chucVu: record.chucVu,
+                heSoLuong: record.heSoLuong,
+                tyLeThuongDoanhThu: record.tyLeThuongDoanhThu
+              })
               setIsModalVisible(true)
             }}
             size="small"
@@ -142,18 +160,22 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
   const handleSubmit = async (values: any) => {
     setLoading(true)
     try {
-      const requestData = {
+      const requestData: any = {
         hoTen: values.name,
         email: values.email,
         sdt: values.phone,
-        matKhau: values.password,
         chucVu: values.chucVu,
         diaChi: values.diaChi || '',
         cmndCccd: values.cmndCccd || '',
-        heSoLuong: values.heSoLuong || 1,
-        tyLeThuongDoanhThu: values.tyLeThuongDoanhThu || 0,
+        heSoLuong: parseFloat(values.heSoLuong) || 1,
+        tyLeThuongDoanhThu: parseFloat(values.tyLeThuongDoanhThu) || 0,
         ngaySinh: values.ngaySinh || new Date().toISOString().split('T')[0],
         gioiTinh: values.gioiTinh || 'Khác',
+      }
+      
+      // Only add password when creating new employee
+      if (!editingId && values.password) {
+        requestData.matKhau = values.password
       }
 
       if (editingId) {
@@ -248,17 +270,33 @@ export const MemberManagement: React.FC<MemberManagementProps> = ({ onDataUpdate
             <Select
               placeholder="Chọn chức vụ"
               options={[
-                { label: 'Lễ tân', value: 'Lễ tân' },
-                { label: 'Quản Lý', value: 'Quản Lý' },
-                { label: 'Kế toán', value: 'Kế toán' },
+                { label: '📋 Tiếp Tân', value: 'TiepTan' },
+                { label: '💼 Kế Toán', value: 'KeToan' },
+                { label: '👨‍🍳 Bếp', value: 'Bep' },
+                { label: '🍽️ Phục Vụ', value: 'PhucVu' },
+                { label: '⚙️ Quản Trị Hệ Thống', value: 'Quản Trị Hệ Thống' },
               ]}
             />
           </Form.Item>
-          <Form.Item label="Hệ Số Lương" name="heSoLuong" rules={[{ required: true, message: 'Vui lòng nhập hệ số lương' }]}>
-            <Input type="number" placeholder="1.0" step="0.01" />
+          <Form.Item 
+            label="Hệ Số Lương" 
+            name="heSoLuong" 
+            rules={[
+              { required: true, message: 'Vui lòng nhập hệ số lương' },
+              { type: 'number', min: 0.1, max: 10, message: 'Hệ số lương từ 0.1 đến 10', transform: (value) => Number(value) }
+            ]}
+          >
+            <Input type="number" placeholder="1.0" step="0.01" min="0.1" max="10" />
           </Form.Item>
-          <Form.Item label="Tỷ Lệ Thưởng Doanh Thu (%)" name="tyLeThuongDoanhThu" rules={[{ required: true, message: 'Vui lòng nhập tỷ lệ thưởng' }]}>
-            <Input type="number" placeholder="0" step="0.01" />
+          <Form.Item 
+            label="Tỷ Lệ Thưởng Doanh Thu (%)" 
+            name="tyLeThuongDoanhThu" 
+            rules={[
+              { required: true, message: 'Vui lòng nhập tỷ lệ thưởng' },
+              { type: 'number', min: 0, max: 100, message: 'Tỷ lệ thưởng từ 0% đến 100%', transform: (value) => Number(value) }
+            ]}
+          >
+            <Input type="number" placeholder="0" step="0.01" min="0" max="100" />
           </Form.Item>
         </Form>
       </Modal>

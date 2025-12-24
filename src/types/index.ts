@@ -9,6 +9,8 @@ export interface LoginResponse {
   tenDangNhap: string
   loaiTaiKhoan: string
   maKhachHang: number | null
+  maNhanVien?: number | null
+  chucVu?: string  // TiepTan, KeToan, Bep, PhucVu
   hoTen: string
   soDienThoai?: string
   email?: string
@@ -37,6 +39,8 @@ export interface AuthUser {
   tenDangNhap: string
   loaiTaiKhoan: string
   maKhachHang: number | null
+  maNhanVien?: number | null
+  chucVu?: string  // TiepTan, KeToan, Bep, PhucVu
   hoTen: string
 }
 

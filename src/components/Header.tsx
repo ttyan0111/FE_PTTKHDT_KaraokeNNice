@@ -10,7 +10,7 @@ import {
   MenuOutlined,
   LogoutOutlined,
 } from '@ant-design/icons'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import './Header.css'
@@ -22,15 +22,9 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = () => {
   const [drawerVisible, setDrawerVisible] = useState(false)
-  const [authState, setAuthState] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAuthenticated, logout } = useAuth()
-
-  // Force re-render when auth state changes
-  useEffect(() => {
-    setAuthState(isAuthenticated)
-  }, [isAuthenticated])
 
   // Menu items cho Customer
   const customerMenuItems = [
@@ -64,14 +58,17 @@ export const Header: React.FC<HeaderProps> = () => {
   }
 
   // User dropdown menu items - Khác nhau tùy theo loại tài khoản
-  const userMenuItems: MenuProps['items'] = user?.loaiTaiKhoan === 'NHAN_VIEN' 
+  // Determine management route for staff (receptionist should go to /receptionist)
+  const manageRoute = user?.chucVu === 'TiepTan' ? '/receptionist' : '/admin'
+
+  const userMenuItems: MenuProps['items'] = user?.loaiTaiKhoan === 'NHAN_VIEN'
     ? [
-        // Nếu là nhân viên/admin - hiển thị cả "Quản lý" và "Đăng xuất"
+        // If staff/admin - show "Quản Lý" and "Đăng Xuất"; route depends on role
         {
-          key: 'admin',
+          key: 'manage',
           label: 'Quản Lý',
           icon: <UserOutlined />,
-          onClick: () => navigate('/admin'),
+          onClick: () => navigate(manageRoute),
         },
         {
           type: 'divider' as const,
@@ -85,7 +82,7 @@ export const Header: React.FC<HeaderProps> = () => {
         },
       ]
     : [
-        // Nếu là khách hàng - chỉ hiển thị "Đăng xuất"
+        // If customer - only show "Đăng xuất"
         {
           key: 'logout',
           label: 'Đăng Xuất',
@@ -126,7 +123,7 @@ export const Header: React.FC<HeaderProps> = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="auth-buttons">
-            {authState && user ? (
+            {isAuthenticated && user ? (
               // After login - show avatar + dropdown
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
@@ -203,7 +200,7 @@ export const Header: React.FC<HeaderProps> = () => {
           items={menuItems}
         />
         <div className="mobile-auth-buttons">
-          {authState && user ? (
+          {isAuthenticated && user ? (
             // After login - show user info and logout
             <>
               <div style={{ padding: '10px', color: '#fff' }}>

@@ -61,31 +61,69 @@ const LoginPage: React.FC = () => {
                 await login(formData.userId, formData.password);
                 console.log('✅ Login successful');
                 
-                // Validate chức vụ nếu là nhân viên
+                // Validate loại tài khoản và chức vụ
                 const userStr = localStorage.getItem('authUser');
                 if (userStr) {
                     const userData = JSON.parse(userStr);
+                    const roleNames: Record<string, string> = {
+                        'KeToan': 'Kế Toán',
+                        'TiepTan': 'Tiếp Tân',
+                        'Bep': 'Bếp',
+                        'PhucVu': 'Phục Vụ',
+                        'Quản Trị Hệ Thống': 'Quản Trị Hệ Thống'
+                    };
                     
-                    // Kiểm tra nếu đang ở mode employee nhưng không phải NHAN_VIEN
-                    if (loginMode === 'employee' && userData.loaiTaiKhoan !== 'NHAN_VIEN') {
-                        setErrorMessage('Tài khoản này không phải là nhân viên!');
-                        message.error('Tài khoản này không phải là nhân viên!');
-                        setIsLoading(false);
-                        return;
+                    // MODE 1: KHÁCH HÀNG - Chỉ cho phép KHACH_HANG
+                    if (loginMode === 'user') {
+                        if (userData.loaiTaiKhoan !== 'KHACH_HANG') {
+                            setErrorMessage('Vui lòng chọn đúng loại tài khoản! Đây là tài khoản nhân viên/quản trị.');
+                            message.error('Tài khoản này không phải là khách hàng!');
+                            setIsLoading(false);
+                            return;
+                        }
                     }
                     
-                    // Kiểm tra chức vụ có khớp không (nếu là nhân viên)
-                    if (loginMode === 'employee' && userData.chucVu !== employeeRole) {
-                        const roleNames: Record<string, string> = {
-                            'KeToan': 'Kế Toán',
-                            'TiepTan': 'Tiếp Tân',
-                            'Bep': 'Bếp',
-                            'PhucVu': 'Phục Vụ'
-                        };
-                        setErrorMessage(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
-                        message.error(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
-                        setIsLoading(false);
-                        return;
+                    // MODE 2: NHÂN VIÊN - Chỉ cho phép NHAN_VIEN với chức vụ cụ thể (KHÔNG bao gồm admin)
+                    if (loginMode === 'employee') {
+                        if (userData.loaiTaiKhoan !== 'NHAN_VIEN') {
+                            setErrorMessage('Tài khoản này không phải là nhân viên!');
+                            message.error('Tài khoản này không phải là nhân viên!');
+                            setIsLoading(false);
+                            return;
+                        }
+                        
+                        // Không cho phép admin login ở chế độ nhân viên
+                        if (userData.chucVu === 'Quản Trị Hệ Thống') {
+                            setErrorMessage('Tài khoản quản trị vui lòng chọn chế độ "Quản Trị"!');
+                            message.error('Tài khoản quản trị vui lòng chọn chế độ "Quản Trị"!');
+                            setIsLoading(false);
+                            return;
+                        }
+                        
+                        // Kiểm tra chức vụ có khớp với role đã chọn không
+                        if (userData.chucVu !== employeeRole) {
+                            setErrorMessage(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
+                            message.error(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
+                            setIsLoading(false);
+                            return;
+                        }
+                    }
+                    
+                    // MODE 3: QUẢN TRỊ - Chỉ cho phép admin (Quản Trị Hệ Thống)
+                    if (loginMode === 'admin') {
+                        if (userData.loaiTaiKhoan !== 'NHAN_VIEN') {
+                            setErrorMessage('Tài khoản này không có quyền quản trị!');
+                            message.error('Tài khoản này không có quyền quản trị!');
+                            setIsLoading(false);
+                            return;
+                        }
+                        
+                        if (userData.chucVu !== 'Quản Trị Hệ Thống') {
+                            setErrorMessage(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không có quyền quản trị! Vui lòng chọn chế độ "Nhân Viên".`);
+                            message.error('Tài khoản này không có quyền quản trị!');
+                            setIsLoading(false);
+                            return;
+                        }
                     }
                 }
                 

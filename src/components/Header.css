@@ -16,6 +16,17 @@
   50% { background-position: 100% 50%; }
 }
 
+@keyframes menuItemFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .header-container {
   display: flex;
   align-items: center;
@@ -97,7 +108,14 @@
   border-radius: 12px !important;
   overflow: visible !important;
   height: auto !important;
+  animation: menuItemFadeIn 0.6s ease-out backwards;
 }
+
+.desktop-menu .ant-menu-item:nth-child(1) { animation-delay: 0.1s; }
+.desktop-menu .ant-menu-item:nth-child(2) { animation-delay: 0.2s; }
+.desktop-menu .ant-menu-item:nth-child(3) { animation-delay: 0.3s; }
+.desktop-menu .ant-menu-item:nth-child(4) { animation-delay: 0.4s; }
+.desktop-menu .ant-menu-item:nth-child(5) { animation-delay: 0.5s; }
 
 /* Simple gradient border effect - optimized */
 .desktop-menu .ant-menu-item::before {

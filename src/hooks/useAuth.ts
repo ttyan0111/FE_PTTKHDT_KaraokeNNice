@@ -72,6 +72,12 @@ export const useAuth = (): UseAuthReturn => {
       setToken(response.token)
       localStorage.setItem('authToken', response.token)
       localStorage.setItem('authUser', JSON.stringify(authUser))
+      // Notify other hook instances/components that auth state changed
+      try {
+        window.dispatchEvent(new CustomEvent('authChange'))
+      } catch (e) {
+        // no-op: some test environments may not support CustomEvent
+      }
     } finally {
       setIsLoading(false)
     }
@@ -120,6 +126,12 @@ export const useAuth = (): UseAuthReturn => {
     setToken(null)
     localStorage.removeItem('authToken')
     localStorage.removeItem('authUser')
+    // Notify other hook instances/components that auth state changed
+    try {
+      window.dispatchEvent(new CustomEvent('authChange'))
+    } catch (e) {
+      // ignore
+    }
   }, [])
 
   const checkAuth = useCallback(() => {
@@ -137,6 +149,19 @@ export const useAuth = (): UseAuthReturn => {
       logout()
     }
   }, [logout])
+
+  // Listen for global auth changes (dispatched by other hook instances)
+  // so that separate useAuth() calls across components stay in sync.
+  useEffect(() => {
+    const handler = () => {
+      checkAuth()
+    }
+
+    window.addEventListener('authChange', handler)
+    return () => {
+      window.removeEventListener('authChange', handler)
+    }
+  }, [checkAuth])
 
   return {
     user,
