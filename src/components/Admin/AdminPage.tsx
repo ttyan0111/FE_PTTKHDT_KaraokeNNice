@@ -17,6 +17,8 @@ import RoomManagement from './RoomManagement'
 import { RoomTypeManagement } from './RoomTypeManagement'
 import { OrderManagement } from './OrderManagement'
 import { PromotionManagement } from './PromotionManagement'
+import { MenuManagement } from './MenuManagement'
+import { InvoiceManagement } from './InvoiceManagement'
 import { PartyManagement } from './PartyManagement'
 
 const { Sider, Content } = Layout
@@ -97,6 +99,10 @@ export const AdminPage: React.FC = () => {
         return <RoomTypeManagement onDataUpdate={() => console.log('Room types updated')} />
       case 'rooms':
         return <RoomManagement onDataUpdate={() => console.log('Rooms updated')} />
+      case 'menu':
+        return <MenuManagement onDataUpdate={() => console.log('Menu updated')} />
+      case 'invoices':
+        return <InvoiceManagement onDataUpdate={() => console.log('Invoices updated')} />
       case 'orders':
         return <OrderManagement orders={orders} />
       case 'promotions':
@@ -121,12 +127,13 @@ export const AdminPage: React.FC = () => {
           onClick={(e) => setSelectedMenu(e.key)}
           items={[
             { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-            { key: 'members', icon: <UserOutlined />, label: 'Thành Viên' },
+            { key: 'members', icon: <UserOutlined />, label: 'Nhân Viên' },
             { key: 'roomtypes', icon: <HomeOutlined />, label: 'Loại Phòng' },
             { key: 'rooms', icon: <HomeOutlined />, label: 'Phòng Hát' },
-            { key: 'orders', icon: <ShoppingCartOutlined />, label: 'Đơn Hàng' },
-            { key: 'parties', icon: <CalendarOutlined />, label: 'Đặt Tiệc' },
+            { key: 'menu', icon: <GiftOutlined />, label: 'Quản Lý Menu' },
+            { key: 'invoices', icon: <ShoppingCartOutlined />, label: 'Hóa Đơn' },
             { key: 'promotions', icon: <GiftOutlined />, label: 'Khuyến Mãi' },
+            { key: 'parties', icon: <CalendarOutlined />, label: 'Tiệc' },
           ]}
         />
         <div style={{ padding: '20px', marginTop: '20px' }}>
