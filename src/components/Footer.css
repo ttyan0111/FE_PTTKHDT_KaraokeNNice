@@ -1,0 +1,29 @@
+/* Footer link hover effects */
+.footer-link {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-link:hover {
+    color: #87d068;
+    transform: translateX(4px);
+}
+
+.footer-service-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+    font-size: inherit;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.footer-service-btn:hover {
+    color: #87d068;
+    transform: translateX(4px);
+}

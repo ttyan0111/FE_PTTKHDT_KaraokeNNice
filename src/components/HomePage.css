@@ -101,7 +101,7 @@
 
 .hero-content h1 {
   font-family: 'Montserrat', 'Segoe UI', sans-serif;
-  font-size: 82px;
+  font-size: 50px;
   font-weight: 900;
   margin-bottom: 32px;
   text-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
@@ -147,7 +147,8 @@
 /* Stats Section */
 .stats-section {
   background: linear-gradient(180deg, rgba(139, 92, 246, 0.03) 0%, rgba(167, 139, 250, 0.05) 100%);
-  padding: 100px 20px;  /* Tăng từ 80px lên 100px */
+  padding: 100px 20px;
+  /* Tăng từ 80px lên 100px */
   margin: 0;
   border-top: 1px solid rgba(139, 92, 246, 0.1);
   backdrop-filter: blur(10px);
@@ -163,16 +164,19 @@
 }
 
 .stats-section .ant-statistic-title {
-  font-size: 16px;  /* Tăng từ 15px lên 16px */
+  font-size: 16px;
+  /* Tăng từ 15px lên 16px */
   color: #6B7280;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 12px;  /* Tăng từ 8px lên 12px */
+  margin-bottom: 12px;
+  /* Tăng từ 8px lên 12px */
 }
 
 .stats-section .ant-statistic-content {
-  font-size: 36px;  /* Giảm từ 48px xuống 36px */
+  font-size: 36px;
+  /* Giảm từ 48px xuống 36px */
   font-weight: 800;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -271,10 +275,11 @@
 }
 
 .feature-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   margin-bottom: 16px;
   color: #111827;
+  white-space: nowrap;
 }
 
 .feature-description {
@@ -305,7 +310,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     linear-gradient(to bottom, rgba(248, 247, 255, 0.15) 0%, transparent 10%, transparent 90%, rgba(248, 247, 255, 0.15) 100%),
     radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.08) 2px, transparent 2px);
   background-size: 100% 100%, 40px 40px;
@@ -318,6 +323,7 @@
   0% {
     transform: translate(0, 0) rotate(0deg);
   }
+
   100% {
     transform: translate(40px, 40px) rotate(360deg);
   }
@@ -337,8 +343,15 @@
 }
 
 @keyframes titleGlow {
-  0%, 100% { text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 255, 255, 0.1); }
-  50% { text-shadow: 0 4px 25px rgba(0, 0, 0, 0.4), 0 0 60px rgba(255, 255, 255, 0.2); }
+
+  0%,
+  100% {
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 255, 255, 0.1);
+  }
+
+  50% {
+    text-shadow: 0 4px 25px rgba(0, 0, 0, 0.4), 0 0 60px rgba(255, 255, 255, 0.2);
+  }
 }
 
 .booking-cta-section p {
@@ -483,6 +496,7 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+
   .hero-carousel,
   .hero-slide {
     height: 400px;
@@ -524,7 +538,8 @@
   }
 
   .stats-section .ant-statistic-content {
-    font-size: 28px;  /* Giảm từ 36px xuống 28px cho mobile */
+    font-size: 28px;
+    /* Giảm từ 36px xuống 28px cho mobile */
   }
 
   .stats-section .ant-statistic-title {
