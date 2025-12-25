@@ -88,7 +88,8 @@ export default function RoomManagement({ onDataUpdate }: RoomManagementProps) {
 
   const roomsWithFloor = rooms.map((room: any) => {
     const tenPhong = room.tenPhong || ''
-    const extractedFloor = parseInt(tenPhong.substring(1, 2)) || 1
+    // Parse tầng từ ký tự thứ 2 của tên phòng (P001 -> 0, P101 -> 1, P201 -> 2)
+    const extractedFloor = parseInt(tenPhong.charAt(1)) || 0
     return {
       ...room,
       tang: extractedFloor
@@ -110,7 +111,7 @@ export default function RoomManagement({ onDataUpdate }: RoomManagementProps) {
   const handleEdit = (record: Room) => {
     setEditingId(record.maPhong)
     const tenPhong = record.tenPhong || ''
-    const tang = parseInt(tenPhong.substring(1, 2)) || 1
+    const tang = parseInt(tenPhong.charAt(1)) || 0
     const viTriNumber = parseInt(tenPhong.substring(2)) || 1
     form.setFieldsValue({
       tang: tang,
@@ -124,10 +125,13 @@ export default function RoomManagement({ onDataUpdate }: RoomManagementProps) {
   const handleDelete = async (maPhong: number) => {
     try {
       await apiClient.deleteRoom(maPhong)
-      message.success('Xóa phòng thành công!')
+      message.success('✅ Xóa phòng thành công!')
       fetchRooms()
+      if (onDataUpdate) onDataUpdate()
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Xóa thất bại')
+      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể xóa phòng'
+      console.error('Lỗi xóa phòng:', error)
+      message.error(`❌ ${errorMsg}`)
     }
   }
 
@@ -138,14 +142,12 @@ export default function RoomManagement({ onDataUpdate }: RoomManagementProps) {
       const viTriNumber = values.viTriNumber || 1
       const tenPhong = `P${tang}${String(viTriNumber).padStart(2, '0')}`
 
-      // Kiểm tra phòng đã tồn tại chưa (chỉ khi tạo mới)
-      if (!editingId) {
-        const existingRoom = rooms.find(r => r.tenPhong === tenPhong)
-        if (existingRoom) {
-          message.error(`❌ Phòng ${tenPhong} đã tồn tại! Vui lòng chọn vị trí khác.`)
-          setLoading(false)
-          return
-        }
+      // Kiểm tra phòng đã tồn tại chưa
+      const existingRoom = rooms.find(r => r.tenPhong === tenPhong && r.maPhong !== editingId)
+      if (existingRoom) {
+        message.error(`❌ Phòng ${tenPhong} đã tồn tại! Vui lòng chọn vị trí khác.`)
+        setLoading(false)
+        return
       }
 
       const formData = {
