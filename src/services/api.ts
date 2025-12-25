@@ -78,6 +78,17 @@ class ApiClient {
     )
   }
 
+  // Generic HTTP methods
+  async get(url: string): Promise<any> {
+    const response = await this.client.get(url)
+    return response
+  }
+
+  async post(url: string, data: any): Promise<any> {
+    const response = await this.client.post(url, data)
+    return response
+  }
+
   // Auth APIs
   async login(data: LoginRequest): Promise<LoginResponse> {
     console.log('🔷 api.login() called with:', {
@@ -351,10 +362,12 @@ class ApiClient {
         cmndCccd: data.cmndCccd,
         ngaySinh: data.ngaySinh,
         gioiTinh: data.gioiTinh,
+        heSoLuong: data.heSoLuong,
+        tyLeThuongDoanhThu: data.tyLeThuongDoanhThu,
       },
       {
         params: {
-          username: data.email,
+          username: data.sdt,  // Dùng số điện thoại làm tên đăng nhập
           password: data.matKhau,
         },
       }
