@@ -5,11 +5,17 @@ import {
   HomeOutlined,
   LogoutOutlined,
   UserOutlined,
+  HistoryOutlined,
+  DollarOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { PartyManagement } from '../Admin/PartyManagement'
 import ReceptionistBooking from './ReceptionistBooking'
+import ReceptionistHistory from './ReceptionistHistory'
+import ReceptionistPartnerBooking from './ReceptionistPartnerBooking'
+import ReceptionistLoyaltyMember from './ReceptionistLoyaltyMember'
+import ReceptionistPayment from './ReceptionistPayment'
 
 const { Sider, Content } = Layout
 
@@ -23,8 +29,15 @@ export const ReceptionistPage: React.FC = () => {
       case 'party':
         return <PartyManagement />
       case 'booking':
-        // Receptionist-specific booking UI
         return <ReceptionistBooking />
+      case 'history':
+        return <ReceptionistHistory />
+      case 'partner':
+        return <ReceptionistPartnerBooking />
+      case 'loyalty':
+        return <ReceptionistLoyaltyMember />
+      case 'payment':
+        return <ReceptionistPayment />
       default:
         return <PartyManagement />
     }
@@ -48,6 +61,10 @@ export const ReceptionistPage: React.FC = () => {
           items={[
             { key: 'party', icon: <CalendarOutlined />, label: 'Quản Lý Đặt Tiệc' },
             { key: 'booking', icon: <HomeOutlined />, label: 'Quản Lý Đặt Phòng' },
+            { key: 'history', icon: <HistoryOutlined />, label: 'Lịch Sử Đặt Phòng' },
+            { key: 'partner', icon: <UserOutlined />, label: 'Khách Từ Đối Tác' },
+            { key: 'loyalty', icon: <UserOutlined />, label: 'Thành Viên Thân Thiết' },
+            { key: 'payment', icon: <DollarOutlined />, label: 'Ghi Nhận Điểm' },
           ]}
         />
         <div style={{ padding: '20px', marginTop: '20px' }}>

@@ -9,15 +9,18 @@
     box-shadow: none;
     border-width: 1.5px;
 }
+
 .facility-item.facility-small .facility-label {
     font-size: 0.7rem;
     margin-top: 4px;
     letter-spacing: 0.5px;
 }
+
 .facility-item.facility-small .facility-icon {
     font-size: 1.2rem;
     margin-bottom: 2px;
 }
+
 /* ============================================
    FLOOR PLAN BOOKING - MAIN STYLES
    Theme: Cyberpunk / Dark Neon Lounge
@@ -288,6 +291,11 @@
     border-right: 2px dashed var(--border-neon);
     position: relative;
     padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
 }
 
 .corridor-path {
@@ -420,7 +428,8 @@
     background: var(--facility-wc);
     border-color: #00d4ff;
     box-shadow: 0 0 20px rgba(30, 144, 255, 0.6), 0 0 40px rgba(30, 144, 255, 0.4);
-    animation: pulse-wc 2s ease-in-out infinite;
+    /* animation: pulse-wc 2s ease-in-out infinite; */
+    /* Disabled animation */
     min-width: 140px;
     min-height: 100px;
     padding: 20px;
@@ -431,7 +440,8 @@
     background: var(--facility-exit);
     border-color: #bbd6c1;
     box-shadow: 0 0 20px rgba(93, 233, 126, 0.7), 0 0 40px rgba(127, 227, 120, 0.5);
-    animation: pulse-exit 2s ease-in-out infinite;
+    /* animation: pulse-exit 2s ease-in-out infinite; */
+    /* Disabled animation */
     min-width: 140px;
     min-height: 100px;
     padding: 20px;

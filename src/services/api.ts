@@ -329,7 +329,7 @@ class ApiClient {
     const response = await this.client.get('/v1/quan-ly-tai-khoan-nhan-vien/danh-sach')
     console.log('getAllEmployees raw response:', response)
     console.log('getAllEmployees response.data:', response.data)
-    
+
     // Nếu response.data là array, trả về nó
     // Nếu response.data là object có property data/content, unwrap nó
     let data = response.data
@@ -344,7 +344,7 @@ class ApiClient {
         data = data.nhanViens
       }
     }
-    
+
     console.log('getAllEmployees final data:', data)
     return Array.isArray(data) ? data : []
   }
@@ -473,6 +473,34 @@ class ApiClient {
       params: { soNguoi, gioDat, gioKetThuc },
     })
     return response.data
+  }
+
+  async getAllBookings(sdt?: string): Promise<any[]> {
+    const response = await this.client.get('/dat-phong/tra-cuu', {
+      params: sdt ? { sdt } : {}
+    })
+    return response.data
+  }
+
+  async updateBookingStatus(maPhieuDat: number, trangThai: string): Promise<any> {
+    const response = await this.client.patch(`/dat-phong/${maPhieuDat}/status`, null, {
+      params: { trangThai }
+    })
+    return response.data
+  }
+
+  async getOccupiedSlots(date?: string, startTime?: string, endTime?: string): Promise<any[]> {
+    const params: any = {};
+    if (date) params.date = date;
+    if (startTime) params.startTime = startTime;
+    if (endTime) params.endTime = endTime;
+
+    const response = await this.client.get('/dat-phong/occupied-slots', { params })
+    return response.data
+  }
+
+  async deleteBooking(maPhieuDat: number): Promise<void> {
+    await this.client.delete(`/dat-phong/${maPhieuDat}`)
   }
 
   // MatHang (Menu Items) APIs

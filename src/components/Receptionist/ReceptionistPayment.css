@@ -1,0 +1,210 @@
+.payment-container {
+    padding: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 32px;
+    color: white;
+}
+
+.payment-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: white;
+}
+
+.payment-header p {
+    font-size: 16px;
+    opacity: 0.95;
+}
+
+.payment-card,
+.summary-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+}
+
+.payment-card {
+    padding: 24px;
+}
+
+.payment-card h3 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 24px;
+}
+
+.payment-card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.applied-promo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.promo-hints {
+    padding: 12px;
+    background: #f0f2f5;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.member-info {
+    margin-top: 12px;
+}
+
+.summary-card {
+    padding: 24px;
+    position: sticky;
+    top: 24px;
+}
+
+.summary-card h3 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-item span {
+    font-size: 16px;
+}
+
+.summary-item .amount {
+    font-weight: 600;
+    color: #333;
+}
+
+.summary-item.discount .amount {
+    color: #52c41a;
+}
+
+.summary-item.total {
+    border-bottom: none;
+    padding-top: 16px;
+    margin-top: 8px;
+    border-top: 2px solid #667eea;
+}
+
+.summary-item.total span {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.summary-item.total .amount.final {
+    color: #667eea;
+    font-size: 24px;
+}
+
+.points-preview {
+    margin-top: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fff5f5 0%, #fffaeb 100%);
+    border-radius: 12px;
+}
+
+.points-preview h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fa8c16;
+    margin-bottom: 12px;
+}
+
+.points-calc p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.payment-success-content {
+    margin-top: 12px;
+}
+
+.payment-success-content p {
+    margin: 8px 0;
+}
+
+/* Form Styling */
+.ant-input-number,
+.ant-input-affix-wrapper {
+    border-radius: 8px !important;
+}
+
+.ant-input-number:hover,
+.ant-input-affix-wrapper:hover {
+    border-color: #667eea !important;
+}
+
+.ant-input-number:focus,
+.ant-input-number-focused,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Button Styling */
+.ant-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.ant-btn-primary:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Tags */
+.ant-tag {
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Progress Bar */
+.ant-progress-bg {
+    border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .payment-container {
+        padding: 16px;
+    }
+
+    .payment-header h1 {
+        font-size: 24px;
+    }
+
+    .summary-card {
+        position: static;
+        margin-top: 20px;
+    }
+}
