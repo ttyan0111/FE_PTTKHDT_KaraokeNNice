@@ -1,0 +1,175 @@
+/* Accountant Page Styles - Matching HomePage & AdminPage theme */
+
+.accountant-sidebar-header {
+  padding: 32px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.accountant-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.accountant-sidebar-header h2 {
+  color: white;
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.accountant-sidebar-header p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.accountant-menu-item {
+  margin: 8px 12px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.accountant-menu-item:hover {
+  background: rgba(139, 92, 246, 0.15) !important;
+  transform: translateX(4px);
+}
+
+.accountant-menu-item.ant-menu-item-selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.accountant-content {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 247, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(248, 247, 255, 0.5) 100%
+  );
+  min-height: 100vh;
+  position: relative;
+  overflow-y: auto;
+}
+
+.accountant-content::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 260px;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.accountant-content-wrapper {
+  position: relative;
+  z-index: 1;
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Card Enhancements - Matching HomePage feature cards */
+.ant-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.15) !important;
+}
+
+/* Table Styling */
+.ant-table-wrapper .ant-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(167, 139, 250, 0.08) 100%) !important;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 2px solid rgba(139, 92, 246, 0.1) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(139, 92, 246, 0.03) !important;
+}
+
+/* Button Enhancements */
+.ant-btn-primary {
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.ant-btn-primary:not(.ant-btn-dangerous):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .accountant-content-wrapper {
+    padding: 16px;
+  }
+
+  .accountant-sidebar-header {
+    padding: 20px 16px;
+  }
+
+  .accountant-icon {
+    font-size: 36px;
+  }
+
+  .accountant-sidebar-header h2 {
+    font-size: 20px;
+  }
+}
+
+/* Statistic Custom Styles */
+.ant-statistic-title {
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.ant-statistic-content {
+  font-weight: 700 !important;
+}
+
+/* Tag Enhancements */
+.ant-tag {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 2px 10px;
+}
+
+/* Modal Enhancements */
+.ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ant-modal-header {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(167, 139, 250, 0.08) 100%);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}

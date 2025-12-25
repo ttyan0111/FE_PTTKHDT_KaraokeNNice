@@ -9,6 +9,7 @@ import { PromotionsPage } from './components/PromotionsPage'
 import { MembersPage } from './components/MembersPage'
 import { AdminPage } from './components/Admin'
 import { ReceptionistPage } from './components/Receptionist/ReceptionistPage'
+import { AccountantPage } from './components/Accountant/AccountantPage'
 import { AppFooter } from './components/Footer'
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
@@ -23,6 +24,9 @@ export const App: React.FC = () => {
 
         {/* Receptionist Routes (no header/footer) */}
         <Route path="/receptionist" element={<ReceptionistPage />} />
+
+        {/* Accountant Routes (no header/footer) */}
+        <Route path="/accountant" element={<AccountantPage />} />
 
         {/* Public Routes (with header/footer) */}
         <Route
