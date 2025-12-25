@@ -63,68 +63,103 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
   const fetchRevenueData = async () => {
     try {
-      // Lấy doanh thu theo tháng
-      const monthRes = await api.get(`/v1/doanh-thu/theo-thang?year=${selectedYear}`)
-      if (monthRes.data.success) {
-        setMonthlyRevenue(monthRes.data.data)
+      setLoading(true)
+      // Lấy tất cả hóa đơn để tính doanh thu
+      const hoaDonRes = await api.get('/v1/hoa-don/tat-ca')
+      const allInvoices = Array.isArray(hoaDonRes.data) ? hoaDonRes.data : []
+      
+      // Tính doanh thu theo tháng cho năm được chọn
+      const monthlyData: Record<number, number> = {}
+      for (let i = 1; i <= 12; i++) {
+        monthlyData[i] = 0
       }
-
-      // Lấy doanh thu theo năm
-      const yearRes = await api.get('/v1/doanh-thu/theo-nam')
-      if (yearRes.data.success) {
-        setYearlyRevenue(yearRes.data.data)
-      }
-
-      // Lấy doanh thu hôm nay
-      const todayRes = await api.get('/v1/doanh-thu/hom-nay')
-      if (todayRes.data.success) {
-        setTodayRevenue(parseFloat(todayRes.data.data) / 1000000)
-      }
-
-      // Lấy doanh thu tháng này
-      const monthThisRes = await api.get('/v1/doanh-thu/thang-nay')
-      if (monthThisRes.data.success) {
-        setCurrentMonthRevenue(parseFloat(monthThisRes.data.data) / 1000000)
-      }
-
-      // Lấy doanh thu năm này
-      const yearThisRes = await api.get('/v1/doanh-thu/nam-nay')
-      if (yearThisRes.data.success) {
-        setCurrentYearRevenue(parseFloat(yearThisRes.data.data) / 1000000)
-      }
+      
+      const today = new Date()
+      let todayTotal = 0
+      let thisMonthTotal = 0
+      
+      allInvoices.forEach((inv: any) => {
+        const amount = Number(inv.tongTien) || 0
+        const invoiceDate = new Date(inv.ngayLap)
+        const invoiceMonth = invoiceDate.getMonth() + 1
+        const invoiceYear = invoiceDate.getFullYear()
+        
+        // Doanh thu theo tháng (cho năm được chọn)
+        if (invoiceYear === selectedYear) {
+          monthlyData[invoiceMonth] = (monthlyData[invoiceMonth] || 0) + amount
+        }
+        
+        // Doanh thu hôm nay
+        if (invoiceDate.toDateString() === today.toDateString()) {
+          todayTotal += amount
+        }
+        
+        // Doanh thu tháng này
+        if (invoiceMonth === today.getMonth() + 1 && invoiceYear === today.getFullYear()) {
+          thisMonthTotal += amount
+        }
+      })
+      
+      setMonthlyRevenue(monthlyData)
+      setTodayRevenue(todayTotal / 1000000)
+      setCurrentMonthRevenue(thisMonthTotal / 1000000)
+      
+      // Tính doanh thu theo năm
+      const yearlyData: Record<number, number> = {}
+      allInvoices.forEach((inv: any) => {
+        const amount = Number(inv.tongTien) || 0
+        const invoiceDate = new Date(inv.ngayLap)
+        const invoiceYear = invoiceDate.getFullYear()
+        yearlyData[invoiceYear] = (yearlyData[invoiceYear] || 0) + amount
+      })
+      
+      setYearlyRevenue(yearlyData)
+      
+      // Doanh thu năm nay
+      const currentYearTotal = yearlyData[today.getFullYear()] || 0
+      setCurrentYearRevenue(currentYearTotal / 1000000)
     } catch (error) {
       console.error('Lỗi lấy dữ liệu doanh thu:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
   // Prepare data for monthly chart
-  const monthlyChartData = monthlyRevenue
+  const monthlyChartData = monthlyRevenue && Object.keys(monthlyRevenue).length > 0
     ? {
         labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
         datasets: [
           {
             label: `Doanh Thu Năm ${selectedYear} (Triệu VNĐ)`,
-            data: Object.keys(monthlyRevenue.data)
+            data: Object.keys(monthlyRevenue)
               .sort((a, b) => parseInt(a) - parseInt(b))
-              .map((month) => parseFloat(monthlyRevenue.data[month]) / 1000000),
+              .map((month) => {
+                const value = monthlyRevenue[month]
+                return typeof value === 'number' ? value / 1000000 : 0
+              }),
             borderColor: '#1890ff',
             backgroundColor: 'rgba(24, 144, 255, 0.1)',
             tension: 0.4,
+            fill: true,
           },
         ],
       }
     : null
 
   // Prepare data for yearly chart
-  const yearlyChartData = yearlyRevenue
+  const yearlyChartData = yearlyRevenue && Object.keys(yearlyRevenue).length > 0
     ? {
-        labels: Object.keys(yearlyRevenue.data).sort(),
+        labels: Object.keys(yearlyRevenue).sort(),
         datasets: [
           {
             label: 'Doanh Thu Hàng Năm (Triệu VNĐ)',
-            data: Object.keys(yearlyRevenue.data)
+            data: Object.keys(yearlyRevenue)
               .sort()
-              .map((year) => parseFloat(yearlyRevenue.data[year]) / 1000000),
+              .map((year) => {
+                const value = yearlyRevenue[year]
+                return typeof value === 'number' ? value / 1000000 : 0
+              }),
             backgroundColor: 'rgba(82, 196, 26, 0.6)',
             borderColor: '#52c41a',
             borderWidth: 1,

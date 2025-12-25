@@ -108,7 +108,7 @@ const LoginPage: React.FC = () => {
                             validationFailed = true;
                             validationMessage = 'Tài khoản này không có quyền quản trị!';
                         }
-                        else if (userData.chucVu !== 'Quản Trị Hệ Thống') {
+                        else if (userData.chucVu !== 'QuanTriHeThong') {
                             validationFailed = true;
                             validationMessage = `Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không có quyền quản trị! Vui lòng chọn chế độ "Nhân Viên".`;
                         }
