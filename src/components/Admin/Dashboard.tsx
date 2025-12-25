@@ -28,7 +28,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
   const [currentMonthRevenue, setCurrentMonthRevenue] = useState(0)
   const [currentYearRevenue, setCurrentYearRevenue] = useState(0)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [members, setMembers] = useState(0)
+  const [employees, setEmployees] = useState(0)
   const [rooms, setRooms] = useState(0)
   const [loading, setLoading] = useState(false)
   const currentYear = new Date().getFullYear()
@@ -41,16 +41,16 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
   const fetchMembersAndRooms = async () => {
     try {
-      // Lấy tổng số thành viên (từ tất cả thành viên)
-      const membersRes = await api.get('/v1/thanh-vien')
-      if (membersRes.data && Array.isArray(membersRes.data)) {
-        setMembers(membersRes.data.length)
-      } else if (membersRes.data && membersRes.data.data) {
-        setMembers(membersRes.data.data.length)
+      // Lấy tổng số nhân viên
+      const employeesRes = await api.get('/v1/quan-ly-tai-khoan-nhan-vien/danh-sach')
+      let employeeData = employeesRes.data
+      if (employeeData && typeof employeeData === 'object' && !Array.isArray(employeeData)) {
+        employeeData = employeeData.data || employeeData.content || employeeData.employees || employeeData.nhanViens || []
       }
+      setEmployees(Array.isArray(employeeData) ? employeeData.length : 0)
 
-      // Lấy tổng số loại phòng
-      const roomsRes = await api.get('/v1/loai-phong/tat-ca')
+      // Lấy tổng số phòng
+      const roomsRes = await api.get('/v1/phong/tat-ca')
       if (roomsRes.data && Array.isArray(roomsRes.data)) {
         setRooms(roomsRes.data.length)
       } else if (roomsRes.data && roomsRes.data.data) {
@@ -153,8 +153,8 @@ export const Dashboard: React.FC<DashboardProps> = () => {
             bodyStyle={{ padding: '24px' }}
           >
             <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>Tổng Thành Viên</span>}
-              value={members}
+              title={<span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>Tổng Nhân Viên</span>}
+              value={employees}
               prefix={<UserOutlined />}
               valueStyle={{ color: 'white', fontSize: '32px', fontWeight: '600' }}
             />
