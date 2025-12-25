@@ -62,7 +62,8 @@ export const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ onDataUpda
         tienCocDaTra: Number(inv.tienCocDaTra) || 0,
         conPhaiTra: Number(inv.conPhaiTra) || 0,
         hinhThucThanhToan: inv.hinhThucThanhToan || '',
-        trangThai: inv.trangThai || 'Chưa thanh toán'
+        trangThai: inv.trangThai || 'Chưa thanh toán',
+        maNVThanhToan: inv.nhanVien?.maNV || inv.maNVThanhToan
       })) : []
       
       setInvoices(invoices)
@@ -167,6 +168,7 @@ export const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ onDataUpda
         <style>
           body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
           .invoice-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+          .company-name { font-size: 20px; font-weight: bold; color: #00d4ff; margin-bottom: 5px; }
           .invoice-title { font-size: 24px; font-weight: bold; margin: 10px 0; }
           .invoice-subtitle { font-size: 12px; color: #666; }
           .invoice-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
@@ -186,6 +188,7 @@ export const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ onDataUpda
       </head>
       <body>
         <div class="invoice-header">
+          <div class="company-name">🎤 KaraokeNNice</div>
           <div class="invoice-title">HOÁ ĐƠN THANH TOÁN</div>
           <div class="invoice-subtitle">Invoice #${selectedInvoice?.maHD}</div>
         </div>
@@ -197,7 +200,7 @@ export const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ onDataUpda
             <div><span class="info-label">Ngày Lập:</span> ${dayjs(selectedInvoice?.ngayLap).format('DD/MM/YYYY HH:mm')}</div>
           </div>
           <div class="info-section">
-            <div><span class="info-label">Khách Hàng:</span> KH-${selectedInvoice?.maKH}</div>
+            <div><span class="info-label">Nhân Viên Thanh Toán:</span> ${selectedInvoice?.maNVThanhToan ? `NV-${selectedInvoice.maNVThanhToan}` : 'N/A'}</div>
             <div><span class="info-label">Hình Thức TT:</span> ${selectedInvoice?.hinhThucThanhToan}</div>
             <div><span class="info-label">Trạng Thái:</span> ${selectedInvoice?.trangThai}</div>
           </div>
@@ -247,7 +250,7 @@ export const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ onDataUpda
         </div>
 
         <div class="footer-note">
-          Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!<br>
+          🎤 KaraokeNNice - Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!<br>
           Ngày in: ${dayjs().format('DD/MM/YYYY HH:mm')}
         </div>
       </body>
@@ -378,7 +381,7 @@ export const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ onDataUpda
                 <div><strong>Mã Phiếu Sử Dụng:</strong> {selectedInvoice.maPhieuSuDung}</div>
               </Col>
               <Col span={12}>
-                <div><strong>Khách Hàng:</strong> KH-{selectedInvoice.maKH}</div>
+                <div><strong>Nhân Viên:</strong> {selectedInvoice.maNVThanhToan ? `${selectedInvoice.maNVThanhToan}` : 'N/A'}</div>
                 <div><strong>Hình Thức TT:</strong> {selectedInvoice.hinhThucThanhToan}</div>
                 <div><strong>Trạng Thái:</strong> <Tag color={selectedInvoice.trangThai === 'Đã thanh toán' ? 'green' : 'orange'}>{selectedInvoice.trangThai}</Tag></div>
               </Col>

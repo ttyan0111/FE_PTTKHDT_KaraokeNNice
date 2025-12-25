@@ -160,14 +160,6 @@ export const Header: React.FC<HeaderProps> = () => {
                   <LoginOutlined className="btn-icon" />
                   <span className="btn-text">Đăng Nhập</span>
                 </Button>
-                <Button
-                  type="text"
-                  className="admin-btn"
-                  onClick={() => navigate('/admin')}
-                >
-                  <UserOutlined className="btn-icon" />
-                  <span className="btn-text">Admin</span>
-                </Button>
                 <Button type="primary" className="signup-btn"
                   onClick={() => navigate('/register')}>
                   <span className="btn-shimmer"></span>
@@ -228,15 +220,6 @@ export const Header: React.FC<HeaderProps> = () => {
             <>
               <Button type="text" icon={<LoginOutlined />} block onClick={() => navigate('/login')}>
                 Đăng Nhập
-              </Button>
-              <Button
-                type="text"
-                icon={<UserOutlined />}
-                block
-                style={{ marginTop: '10px' }}
-                onClick={() => (window.location.href = '/admin')}
-              >
-                Admin
               </Button>
               <Button type="primary" block style={{ marginTop: '10px' }} onClick={() => navigate('/register')}>
                 Đăng Ký

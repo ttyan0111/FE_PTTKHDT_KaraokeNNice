@@ -108,7 +108,7 @@ const LoginPage: React.FC = () => {
                             validationFailed = true;
                             validationMessage = 'Tài khoản này không có quyền quản trị!';
                         }
-                        else if (userData.chucVu !== 'Quản Trị Hệ Thống') {
+                        else if (userData.chucVu !== 'QuanTriHeThong') {
                             validationFailed = true;
                             validationMessage = `Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không có quyền quản trị! Vui lòng chọn chế độ "Nhân Viên".`;
                         }
@@ -128,9 +128,31 @@ const LoginPage: React.FC = () => {
 
                 message.success('Đăng nhập thành công! 🎤');
 
-                // Redirect về homepage sau khi đăng nhập
+                // Role-based redirect
                 setTimeout(() => {
-                    navigate('/');
+                    const userStr = localStorage.getItem('authUser');
+                    if (userStr) {
+                        const userData = JSON.parse(userStr);
+
+                        // Admin (Quản Trị Hệ Thống)
+                        if (userData.chucVu === 'Quản Trị Hệ Thống') {
+                            navigate('/admin');
+                        }
+                        // Kế Toán
+                        else if (userData.chucVu === 'KeToan') {
+                            navigate('/accountant');
+                        }
+                        // Tiếp Tân
+                        else if (userData.chucVu === 'TiepTan') {
+                            navigate('/receptionist');
+                        }
+                        // Khách hàng hoặc role khác
+                        else {
+                            navigate('/');
+                        }
+                    } else {
+                        navigate('/');
+                    }
                 }, 800);
             } catch (error: any) {
                 console.error('❌ Login error:', error);

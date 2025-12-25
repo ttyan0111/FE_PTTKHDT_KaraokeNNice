@@ -566,6 +566,53 @@ class ApiClient {
   async deleteHoaDon(maHD: number): Promise<void> {
     await this.client.delete(`/v1/hoa-don/${maHD}`)
   }
+
+  // Bang Luong (Payroll) APIs
+  async getAllBangLuong(thang: number, nam: number): Promise<any[]> {
+    const response = await this.client.get(`/v1/quan-ly-luong/danh-sach/${thang}/${nam}`)
+    return response.data
+  }
+
+  async getBangLuongByNhanVien(maNhanVien: number, thang: number, nam: number): Promise<any> {
+    const response = await this.client.get(`/v1/quan-ly-luong/xem-chi-tiet/${maNhanVien}`, {
+      params: { thang, nam }
+    })
+    return response.data
+  }
+
+  async tinhLuongNhanVien(maNhanVien: number, thang: number, nam: number): Promise<any> {
+    const response = await this.client.post(`/v1/quan-ly-luong/tinh-luong-nhan-vien/${maNhanVien}`, null, {
+      params: { thang, nam }
+    })
+    return response.data
+  }
+
+  // Phieu Nhap (Import Receipt) APIs
+  async getAllPhieuNhap(): Promise<any[]> {
+    const response = await this.client.get('/v1/nhap-kho')
+    return response.data
+  }
+
+  async getPhieuNhapById(maPhieuNhap: number): Promise<any> {
+    const response = await this.client.get(`/v1/nhap-kho/${maPhieuNhap}`)
+    return response.data
+  }
+
+  async createPhieuNhap(data: any): Promise<any> {
+    const response = await this.client.post('/v1/nhap-kho', data)
+    return response.data
+  }
+
+  async updatePhieuNhap(maPhieuNhap: number, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/nhap-kho/${maPhieuNhap}`, data)
+    return response.data
+  }
+
+  async capNhatTonKho(maMatHang: number, soLuong: number): Promise<void> {
+    await this.client.post(`/v1/nhap-kho/cap-nhat-ton-kho/${maMatHang}`, null, {
+      params: { soLuong }
+    })
+  }
 }
 
 export const apiClient = new ApiClient()
