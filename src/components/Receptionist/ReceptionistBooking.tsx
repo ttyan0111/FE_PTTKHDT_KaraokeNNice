@@ -56,23 +56,16 @@ const mockBranches: Branch[] = [
     id: 1,
     name: 'Chi Nhánh Trung Tâm',
     floors: [
-      // Ground floor restored
       {
         id: 0,
         name: 'Tầng Trệt',
         level: 0,
         items: [
-          // Elevator placed in same corridor position as other floors (order 1)
           { id: 'elevator-ground', type: 'facility', facilityType: 'elevator', label: 'Thang Máy', position: 'corridor', order: 1 } as Facility,
-          // Place Lễ Tân and Khu Chờ as facility icons at top-left of ground floor
-          { id: 'facility-reception', type: 'facility', facilityType: 'reception', label: 'Lễ Tân', position: 'left', order: 0 } as Facility,
-          { id: 'facility-waiting', type: 'facility', facilityType: 'waiting', label: 'Khu Chờ', position: 'left', order: 1 } as Facility,
-          // Removed Sunflower (room-001) per request
           { id: 'room-002', type: 'room', name: 'Daisy', capacity: 6, pricePerHour: 90000, status: 'available', roomType: 'Standard', position: 'right', order: 1 } as Room,
           { id: 'room-003', type: 'room', name: 'Lily', capacity: 8, pricePerHour: 110000, status: 'occupied', roomType: 'Standard', position: 'right', order: 2 } as Room,
         ]
       },
-      // Floor 1: elevator is broken and only 3 rooms (matches user's note)
       {
         id: 1,
         name: 'Tầng 1',
@@ -84,7 +77,6 @@ const mockBranches: Branch[] = [
           { id: 'room-103', type: 'room', name: 'Hoa Mai', capacity: 6, pricePerHour: 100000, status: 'available', roomType: 'Standard', position: 'right', order: 2 } as Room,
         ]
       },
-      // Floor 2: present with rooms (ensure it appears)
       {
         id: 2,
         name: 'Tầng 2',
@@ -109,6 +101,11 @@ const ReceptionistBooking: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState(dayjs().hour(19).minute(0))
   const [duration, setDuration] = useState<number>(2)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [customerName, setCustomerName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [notes, setNotes] = useState('')
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   const selectedBranch = useMemo(() => mockBranches.find(b => b.id === selectedBranchId) || null, [selectedBranchId])
   const selectedFloor = useMemo(() => selectedBranch ? selectedBranch.floors.find(f => f.id === selectedFloorId) || null : null, [selectedBranch, selectedFloorId])
@@ -123,46 +120,62 @@ const ReceptionistBooking: React.FC = () => {
   }, [selectedBranchId])
 
   const organizedItems = useMemo(() => {
-    if (!selectedFloor) return { left: [] as MapItem[], corridor: [] as MapItem[], right: [] as MapItem[], facilities: [] as MapItem[] }
+    if (!selectedFloor) return { left: [], corridor: [], right: [], facilities: [] }
 
     const left = selectedFloor.items.filter(i => i.position === 'left' && i.type === 'room').sort((a, b) => a.order - b.order)
     const corridor = selectedFloor.items.filter(i => i.position === 'corridor' && i.type === 'room').sort((a, b) => a.order - b.order)
     const right = selectedFloor.items.filter(i => i.position === 'right' && i.type === 'room').sort((a, b) => a.order - b.order)
-    const facilities = selectedFloor.items.filter(i => i.type === 'facility').sort((a, b) => a.order - b.order)
-
+    const facilities = selectedFloor.items.filter(i => i.type === 'facility' && i.position === 'corridor').sort((a, b) => a.order - b.order)
     return { left, corridor, right, facilities }
   }, [selectedFloor])
 
   const handleRoomClick = (room: Room) => {
     if (room.status === 'available') {
-      setSelectedRoom(prev => prev?.id === room.id ? null : room)
+      if (selectedRoom?.id === room.id) {
+        setSelectedRoom(null)
+        setIsModalVisible(false)
+      } else {
+        setSelectedRoom(room)
+        setIsModalVisible(true)
+      }
     }
+  }
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {}
+    if (!customerName.trim()) newErrors.customerName = 'Vui lòng nhập tên khách'
+    if (!phone.trim()) newErrors.phone = 'Vui lòng nhập số điện thoại'
+    else if (!/^[0-9]{10,11}$/.test(phone)) newErrors.phone = 'Số điện thoại không hợp lệ'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleBook = async () => {
     if (!selectedRoom) return message.error('Vui lòng chọn phòng')
-    Modal.confirm({
-      title: 'Xác nhận đặt phòng',
-      content: `Đặt phòng ${selectedRoom.name} cho khách?`,
-      onOk: async () => {
-        const payload = {
-          tenKH: 'Khách lẻ',
-          sdt: '0000000000',
-          maPhong: selectedRoom.id,
-          gioDat: selectedDate.format('YYYY-MM-DD') + 'T' + selectedTime.format('HH:mm:ss'),
-          gioKetThuc: selectedDate.add(duration, 'hour').format('YYYY-MM-DD') + 'T' + selectedTime.format('HH:mm:ss'),
-          soNguoi: selectedRoom.capacity,
-          maCoSo: selectedBranchId ?? undefined,
-        }
-        try {
-          await apiClient.bookRoom(payload)
-          message.success('Đặt phòng thành công')
-        } catch (err) {
-          console.error(err)
-          message.error('Đặt phòng thất bại')
-        }
-      }
-    })
+    if (!validateForm()) return
+    const payload = {
+      tenKH: customerName,
+      sdt: phone,
+      ghiChu: notes,
+      maPhong: selectedRoom.id,
+      gioDat: selectedDate.format('YYYY-MM-DD') + 'T' + selectedTime.format('HH:mm:ss'),
+      gioKetThuc: selectedDate.add(duration, 'hour').format('YYYY-MM-DD') + 'T' + selectedTime.format('HH:mm:ss'),
+      soNguoi: selectedRoom.capacity,
+      maCoSo: selectedBranchId ?? undefined,
+    }
+    try {
+      await apiClient.bookRoom(payload)
+      message.success('Đặt phòng thành công')
+      setIsModalVisible(false)
+      setSelectedRoom(null)
+      setCustomerName('')
+      setPhone('')
+      setNotes('')
+      setErrors({})
+    } catch (err) {
+      console.error(err)
+      message.error('Đặt phòng thất bại')
+    }
   }
 
   const renderMapItem = (item: MapItem) => {
@@ -252,12 +265,29 @@ const ReceptionistBooking: React.FC = () => {
               <h2 className="floor-title">{selectedFloor.name} - Sơ Đồ</h2>
 
               <div className="floor-grid">
-                {organizedItems.facilities.length > 0 && <div className="facilities-row">{organizedItems.facilities.map(renderMapItem)}</div>}
+                {organizedItems.facilities.filter(f => (f as Facility).facilityType === 'elevator').length > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                    {organizedItems.facilities
+                      .filter(f => (f as Facility).facilityType === 'elevator')
+                      .map(renderMapItem)}
+                  </div>
+                )}
 
                 <div className="rooms-layout">
-                  <div className="grid-column left-column">{organizedItems.left.map(renderMapItem)}</div>
-                  <div className="grid-column corridor-column"><div className="corridor-path"><ArrowDownOutlined className="corridor-arrow" /><div className="corridor-text">LỐI ĐI</div><ArrowDownOutlined className="corridor-arrow" /></div>{organizedItems.corridor.map(renderMapItem)}</div>
-                  <div className="grid-column right-column">{organizedItems.right.map(renderMapItem)}</div>
+                  <div className="grid-column left-column">
+                    {organizedItems.left.map(renderMapItem)}
+                  </div>
+                  <div className="grid-column corridor-column">
+                    {organizedItems.corridor.map(renderMapItem)}
+                    <div className="corridor-path">
+                      <ArrowDownOutlined className="corridor-arrow" />
+                      <div className="corridor-text">LỐI ĐI</div>
+                      <ArrowDownOutlined className="corridor-arrow" />
+                    </div>
+                  </div>
+                  <div className="grid-column right-column">
+                    {organizedItems.right.map(renderMapItem)}
+                  </div>
                 </div>
               </div>
 
@@ -268,34 +298,69 @@ const ReceptionistBooking: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="empty-state"><EnvironmentOutlined className="empty-icon" /><h2>Vui lòng chọn cơ sở để xem sơ đồ tầng</h2></div>
+            <div className="empty-state">
+              <EnvironmentOutlined className="empty-icon" />
+              <h2>Vui lòng chọn cơ sở để xem sơ đồ tầng</h2>
+            </div>
           )}
         </div>
 
-        <div className="floor-sidebar" style={{ maxWidth: 360 }}>
-          <div className="sidebar-content">
-            <Card title={`Đặt Phòng - Tiếp Tân`} headStyle={{ color: '#fff', background: 'transparent', borderBottom: 'none' }} bodyStyle={{ background: 'transparent' }} style={{ background: 'transparent' }}>
-              <div style={{ marginBottom: 8 }}>
-                <label style={{ color: '#cbd5e1' }}>Tên khách</label>
-                <Input prefix={<UserOutlined />} placeholder="Tên khách" />
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <label style={{ color: '#cbd5e1' }}>Số điện thoại</label>
-                <Input prefix={<PhoneOutlined />} placeholder="Số điện thoại" />
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <label style={{ color: '#cbd5e1' }}>Phòng đã chọn</label>
-                <div style={{ padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-                  {selectedRoom ? (<><b style={{ color: '#fff' }}>{selectedRoom.name}</b><div style={{ color: '#9ca3af' }}>{selectedRoom.capacity} khách</div></>) : (<span style={{ color: '#9ca3af' }}>Chưa chọn phòng</span>)}
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button type="default" onClick={() => { setSelectedRoom(null) }} block>Hủy Chọn</Button>
-                <Button type="primary" onClick={handleBook} block disabled={!selectedRoom}>Đặt Hộ</Button>
-              </div>
-            </Card>
+        <Modal
+          title={<span>Đặt Phòng - Tiếp Tân</span>}
+          open={isModalVisible}
+          onCancel={() => { setIsModalVisible(false); setSelectedRoom(null) }}
+          footer={null}
+          width={420}
+        >
+          <div style={{ marginBottom: 8 }}>
+            <label style={{ color: '#cbd5e1' }}>Tên khách <span style={{ color: 'red' }}>*</span></label>
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="Tên khách"
+              value={customerName}
+              onChange={e => setCustomerName(e.target.value)}
+              status={errors.customerName ? 'error' : ''}
+            />
+            {errors.customerName && <div style={{ color: 'red', fontSize: 12 }}>{errors.customerName}</div>}
           </div>
-        </div>
+          <div style={{ marginBottom: 8 }}>
+            <label style={{ color: '#cbd5e1' }}>Số điện thoại <span style={{ color: 'red' }}>*</span></label>
+            <Input
+              prefix={<PhoneOutlined />}
+              placeholder="Số điện thoại"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              status={errors.phone ? 'error' : ''}
+            />
+            {errors.phone && <div style={{ color: 'red', fontSize: 12 }}>{errors.phone}</div>}
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <label style={{ color: '#cbd5e1' }}>Ghi chú</label>
+            <Input.TextArea
+              placeholder="Ghi chú (nếu có)"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={2}
+            />
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <label style={{ color: '#cbd5e1' }}>Phòng đã chọn</label>
+            <div style={{ padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+              {selectedRoom ? (
+                <>
+                  <b style={{ color: '#fff' }}>{selectedRoom.name}</b>
+                  <div style={{ color: '#9ca3af' }}>{selectedRoom.capacity} khách</div>
+                </>
+              ) : (
+                <span style={{ color: '#9ca3af' }}>Chưa chọn phòng</span>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button type="default" onClick={() => { setSelectedRoom(null); setIsModalVisible(false) }} block>Hủy Chọn</Button>
+            <Button type="primary" onClick={handleBook} block>Đặt Hộ</Button>
+          </div>
+        </Modal>
       </div>
     </div>
   )

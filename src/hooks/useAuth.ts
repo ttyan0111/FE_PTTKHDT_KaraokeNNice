@@ -22,7 +22,7 @@ export const useAuth = (): UseAuthReturn => {
   useEffect(() => {
     const savedToken = localStorage.getItem('authToken')
     const savedUser = localStorage.getItem('authUser')
-    
+
     if (savedToken && savedUser) {
       try {
         setToken(savedToken)
@@ -33,7 +33,7 @@ export const useAuth = (): UseAuthReturn => {
         localStorage.removeItem('authUser')
       }
     }
-    
+
     setIsLoading(false)
   }, [])
 
@@ -46,16 +46,16 @@ export const useAuth = (): UseAuthReturn => {
         matKhauLength: matKhau.length,
         fullMatKhau: matKhau
       })
-      
+
       const requestPayload = {
         tenDangNhap,
         matKhau,
       }
-      
+
       console.log('🔹 Request payload:', requestPayload)
-      
+
       const response = await apiClient.login(requestPayload)
-      
+
       console.log('✅ Login response:', response)
 
       const authUser: AuthUser = {
@@ -137,18 +137,24 @@ export const useAuth = (): UseAuthReturn => {
   const checkAuth = useCallback(() => {
     const savedToken = localStorage.getItem('authToken')
     const savedUser = localStorage.getItem('authUser')
-    
+
     if (savedToken && savedUser) {
       try {
         setToken(savedToken)
         setUser(JSON.parse(savedUser))
       } catch (error) {
-        logout()
+        // Nếu parsing thất bại, xóa state và localStorage (KHÔNG dispatch event để tránh vòng lặp)
+        setUser(null)
+        setToken(null)
+        localStorage.removeItem('authToken')
+        localStorage.removeItem('authUser')
       }
     } else {
-      logout()
+      // Nếu không có token/user, chỉ cần set state về null (KHÔNG gọi logout để tránh vòng lặp)
+      setUser(null)
+      setToken(null)
     }
-  }, [logout])
+  }, [])
 
   // Listen for global auth changes (dispatched by other hook instances)
   // so that separate useAuth() calls across components stay in sync.

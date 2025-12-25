@@ -17,7 +17,7 @@ interface Errors {
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
-    const { login, isLoading: authLoading, user } = useAuth();
+    const { login, logout, isLoading: authLoading, user } = useAuth();
     const [showPassword, setShowPassword] = React.useState<boolean>(false);
     const [loginMode, setLoginMode] = React.useState<'user' | 'admin' | 'employee'>('user');
     const [employeeRole, setEmployeeRole] = React.useState<'KeToan' | 'TiepTan' | 'Bep' | 'PhucVu'>('TiepTan');
@@ -30,18 +30,18 @@ const LoginPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         console.log('🔐 Form submitted - preventDefault called');
-        
+
         setIsLoading(true);
         setErrorMessage('');
 
-        console.log('🔐 Login attempt:', { 
-            userId: formData.userId, 
+        console.log('🔐 Login attempt:', {
+            userId: formData.userId,
             password: formData.password,
             passwordLength: formData.password.length,
-            loginMode, 
-            employeeRole 
+            loginMode,
+            employeeRole
         });
 
         // Validation
@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
                 });
                 await login(formData.userId, formData.password);
                 console.log('✅ Login successful');
-                
+
                 // Validate loại tài khoản và chức vụ
                 const userStr = localStorage.getItem('authUser');
                 if (userStr) {
@@ -72,63 +72,62 @@ const LoginPage: React.FC = () => {
                         'PhucVu': 'Phục Vụ',
                         'Quản Trị Hệ Thống': 'Quản Trị Hệ Thống'
                     };
-                    
+
+                    let validationFailed = false;
+                    let validationMessage = '';
+
                     // MODE 1: KHÁCH HÀNG - Chỉ cho phép KHACH_HANG
                     if (loginMode === 'user') {
                         if (userData.loaiTaiKhoan !== 'KHACH_HANG') {
-                            setErrorMessage('Vui lòng chọn đúng loại tài khoản! Đây là tài khoản nhân viên/quản trị.');
-                            message.error('Tài khoản này không phải là khách hàng!');
-                            setIsLoading(false);
-                            return;
+                            validationFailed = true;
+                            validationMessage = 'Vui lòng chọn đúng loại tài khoản! Đây là tài khoản nhân viên/quản trị.';
                         }
                     }
-                    
+
                     // MODE 2: NHÂN VIÊN - Chỉ cho phép NHAN_VIEN với chức vụ cụ thể (KHÔNG bao gồm admin)
                     if (loginMode === 'employee') {
                         if (userData.loaiTaiKhoan !== 'NHAN_VIEN') {
-                            setErrorMessage('Tài khoản này không phải là nhân viên!');
-                            message.error('Tài khoản này không phải là nhân viên!');
-                            setIsLoading(false);
-                            return;
+                            validationFailed = true;
+                            validationMessage = 'Tài khoản này không phải là nhân viên!';
                         }
-                        
                         // Không cho phép admin login ở chế độ nhân viên
-                        if (userData.chucVu === 'Quản Trị Hệ Thống') {
-                            setErrorMessage('Tài khoản quản trị vui lòng chọn chế độ "Quản Trị"!');
-                            message.error('Tài khoản quản trị vui lòng chọn chế độ "Quản Trị"!');
-                            setIsLoading(false);
-                            return;
+                        else if (userData.chucVu === 'Quản Trị Hệ Thống') {
+                            validationFailed = true;
+                            validationMessage = 'Tài khoản quản trị vui lòng chọn chế độ "Quản Trị"!';
                         }
-                        
                         // Kiểm tra chức vụ có khớp với role đã chọn không
-                        if (userData.chucVu !== employeeRole) {
-                            setErrorMessage(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
-                            message.error(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`);
-                            setIsLoading(false);
-                            return;
+                        else if (userData.chucVu !== employeeRole) {
+                            validationFailed = true;
+                            validationMessage = `Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không phải ${roleNames[employeeRole]}!`;
                         }
                     }
-                    
+
                     // MODE 3: QUẢN TRỊ - Chỉ cho phép admin (Quản Trị Hệ Thống)
                     if (loginMode === 'admin') {
                         if (userData.loaiTaiKhoan !== 'NHAN_VIEN') {
-                            setErrorMessage('Tài khoản này không có quyền quản trị!');
-                            message.error('Tài khoản này không có quyền quản trị!');
-                            setIsLoading(false);
-                            return;
+                            validationFailed = true;
+                            validationMessage = 'Tài khoản này không có quyền quản trị!';
                         }
-                        
-                        if (userData.chucVu !== 'Quản Trị Hệ Thống') {
-                            setErrorMessage(`Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không có quyền quản trị! Vui lòng chọn chế độ "Nhân Viên".`);
-                            message.error('Tài khoản này không có quyền quản trị!');
-                            setIsLoading(false);
-                            return;
+                        else if (userData.chucVu !== 'Quản Trị Hệ Thống') {
+                            validationFailed = true;
+                            validationMessage = `Bạn là ${roleNames[userData.chucVu] || userData.chucVu}, không có quyền quản trị! Vui lòng chọn chế độ "Nhân Viên".`;
                         }
                     }
+
+                    // Nếu validation thất bại, logout và hiển thị lỗi
+                    if (validationFailed) {
+                        // Logout để xóa thông tin đăng nhập (cả state và localStorage)
+                        logout();
+
+                        setErrorMessage(validationMessage);
+                        message.error(validationMessage);
+                        setIsLoading(false);
+                        return;
+                    }
                 }
-                
+
                 message.success('Đăng nhập thành công! 🎤');
-                
+
                 // Redirect về homepage sau khi đăng nhập
                 setTimeout(() => {
                     navigate('/');
@@ -141,19 +140,19 @@ const LoginPage: React.FC = () => {
                     responseData: error?.response?.data,
                     status: error?.response?.status
                 });
-                
+
                 let errorMsg = 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
-                
+
                 if (error?.response?.data?.message) {
                     errorMsg = error.response.data.message;
                 } else if (error?.response?.data) {
-                    errorMsg = typeof error.response.data === 'string' 
-                        ? error.response.data 
+                    errorMsg = typeof error.response.data === 'string'
+                        ? error.response.data
                         : JSON.stringify(error.response.data);
                 } else if (error?.message) {
                     errorMsg = error.message;
                 }
-                
+
                 setErrorMessage(errorMsg);
                 message.error(errorMsg);
                 setIsLoading(false);
@@ -253,9 +252,9 @@ const LoginPage: React.FC = () => {
                                 <div className="login-header">
                                     <h3 className="login-title">Chào mừng đến với NNice!</h3>
                                     <p className="login-subtitle">
-                                        {loginMode === 'admin' ? 'Đăng nhập Quản Trị' : 
-                                         loginMode === 'employee' ? 'Đăng nhập Nhân Viên' : 
-                                         'Đăng nhập Khách Hàng'}
+                                        {loginMode === 'admin' ? 'Đăng nhập Quản Trị' :
+                                            loginMode === 'employee' ? 'Đăng nhập Nhân Viên' :
+                                                'Đăng nhập Khách Hàng'}
                                     </p>
                                 </div>
 

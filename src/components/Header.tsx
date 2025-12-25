@@ -44,8 +44,10 @@ export const Header: React.FC<HeaderProps> = () => {
     { key: '/admin/promotions', label: 'Khuyến Mãi', icon: <GiftOutlined /> },
   ]
 
-  // Chọn menu dựa trên loại tài khoản
-  const menuItems = user?.loaiTaiKhoan === 'NHAN_VIEN' ? adminMenuItems : customerMenuItems
+  // Chọn menu dựa trên chức vụ - CHỈ admin (Quản Trị Hệ Thống) mới thấy Dashboard
+  const menuItems = (user?.loaiTaiKhoan === 'NHAN_VIEN' && user?.chucVu === 'Quản Trị Hệ Thống')
+    ? adminMenuItems
+    : customerMenuItems
 
   const handleMenuClick = (key: string) => {
     navigate(key)
@@ -63,34 +65,34 @@ export const Header: React.FC<HeaderProps> = () => {
 
   const userMenuItems: MenuProps['items'] = user?.loaiTaiKhoan === 'NHAN_VIEN'
     ? [
-        // If staff/admin - show "Quản Lý" and "Đăng Xuất"; route depends on role
-        {
-          key: 'manage',
-          label: 'Quản Lý',
-          icon: <UserOutlined />,
-          onClick: () => navigate(manageRoute),
-        },
-        {
-          type: 'divider' as const,
-        },
-        {
-          key: 'logout',
-          label: 'Đăng Xuất',
-          icon: <LogoutOutlined />,
-          onClick: handleLogout,
-          danger: true,
-        },
-      ]
+      // If staff/admin - show "Quản Lý" and "Đăng Xuất"; route depends on role
+      {
+        key: 'manage',
+        label: 'Quản Lý',
+        icon: <UserOutlined />,
+        onClick: () => navigate(manageRoute),
+      },
+      {
+        type: 'divider' as const,
+      },
+      {
+        key: 'logout',
+        label: 'Đăng Xuất',
+        icon: <LogoutOutlined />,
+        onClick: handleLogout,
+        danger: true,
+      },
+    ]
     : [
-        // If customer - only show "Đăng xuất"
-        {
-          key: 'logout',
-          label: 'Đăng Xuất',
-          icon: <LogoutOutlined />,
-          onClick: handleLogout,
-          danger: true,
-        },
-      ]
+      // If customer - only show "Đăng xuất"
+      {
+        key: 'logout',
+        label: 'Đăng Xuất',
+        icon: <LogoutOutlined />,
+        onClick: handleLogout,
+        danger: true,
+      },
+    ]
 
   return (
     <>
@@ -127,17 +129,17 @@ export const Header: React.FC<HeaderProps> = () => {
               // After login - show avatar + dropdown
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '10px', 
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
                     cursor: 'pointer',
                     padding: '8px 12px',
                     borderRadius: '8px',
                     transition: 'background 0.3s',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <Avatar
                       size={40}

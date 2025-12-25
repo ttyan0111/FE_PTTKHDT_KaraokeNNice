@@ -1,3 +1,23 @@
+/* ========== FACILITY SMALL ========== */
+.facility-item.facility-small {
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 80px;
+    max-height: 80px;
+    padding: 8px !important;
+    margin-bottom: 8px;
+    box-shadow: none;
+    border-width: 1.5px;
+}
+.facility-item.facility-small .facility-label {
+    font-size: 0.7rem;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+}
+.facility-item.facility-small .facility-icon {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+}
 /* ============================================
    FLOOR PLAN BOOKING - MAIN STYLES
    Theme: Cyberpunk / Dark Neon Lounge
