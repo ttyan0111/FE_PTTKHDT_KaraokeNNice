@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Card, Row, Col, Table, Tag, Button, Modal, InputNumber, message, Statistic } from 'antd'
 import {
     WarningOutlined,
@@ -10,19 +10,48 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import { mockMatHang } from './mockData'
 import type { MatHang } from '../../types/accountant'
+import { apiClient } from '../../services/api'
 
 export const InventoryManager: React.FC = () => {
+    const [matHangList, setMatHangList] = useState<MatHang[]>([])
+    const [loading, setLoading] = useState(false)
     const [isNhapHangModalVisible, setIsNhapHangModalVisible] = useState(false)
     const [isXuatHangModalVisible, setIsXuatHangModalVisible] = useState(false)
     const [selectedItem, setSelectedItem] = useState<MatHang | null>(null)
     const [soLuong, setSoLuong] = useState<number>(1)
 
-    const stats = useMemo(() => {
-        const tongVonTonKho = mockMatHang.reduce((sum, item) => sum + (item.GiaNhap * item.SoLuongTon), 0)
-        const soMatHang = mockMatHang.length
-        const canhBaoSapHet = mockMatHang.filter(item => item.SoLuongTon < 10).length
-        return { tongVonTonKho, soMatHang, canhBaoSapHet }
+    useEffect(() => {
+        fetchMatHang()
     }, [])
+
+    const fetchMatHang = async () => {
+        setLoading(true)
+        try {
+            const response = await apiClient.getAllMatHang()
+            const items = Array.isArray(response) ? response.map((item: any) => ({
+                MaHang: item.maHang,
+                TenHang: item.tenHang,
+                LoaiHang: item.loaiHang,
+                DonViTinh: item.donViTinh,
+                GiaNhap: Number(item.giaNhap) || 0,
+                GiaBan: Number(item.giaBan) || 0,
+                SoLuongTon: item.soLuongTon || 0
+            })) : []
+            setMatHangList(items)
+        } catch (err: any) {
+            message.error('Lỗi tải dữ liệu kho: ' + (err.message || 'Không thể kết nối server'))
+            setMatHangList(mockMatHang)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const stats = useMemo(() => {
+        const tongVonTonKho = matHangList.reduce((sum, item) => sum + (item.GiaNhap * item.SoLuongTon), 0)
+        const soMatHang = matHangList.length
+        const canhBaoSapHet = matHangList.filter(item => item.SoLuongTon < 10).length
+        return { tongVonTonKho, soMatHang, canhBaoSapHet }
+    }, [matHangList])
 
     const columns: ColumnsType<MatHang> = [
         {
@@ -127,16 +156,22 @@ export const InventoryManager: React.FC = () => {
         }
     ]
 
-    const handleNhapHang = () => {
+    const handleNhapHang = async () => {
         if (!selectedItem || soLuong <= 0) {
             message.error('Vui lòng nhập số lượng hợp lệ')
             return
         }
-        message.success(`Đã nhập ${soLuong} ${selectedItem.DonViTinh} ${selectedItem.TenHang}`)
-        setIsNhapHangModalVisible(false)
+        try {
+            await apiClient.capNhatTonKho(selectedItem.MaHang, soLuong)
+            message.success(`Đã nhập ${soLuong} ${selectedItem.DonViTinh} ${selectedItem.TenHang}`)
+            setIsNhapHangModalVisible(false)
+            fetchMatHang()
+        } catch (err: any) {
+            message.error('Lỗi nhập hàng: ' + (err.message || 'Không thể cập nhật'))
+        }
     }
 
-    const handleXuatHang = () => {
+    const handleXuatHang = async () => {
         if (!selectedItem || soLuong <= 0) {
             message.error('Vui lòng nhập số lượng hợp lệ')
             return
@@ -145,8 +180,14 @@ export const InventoryManager: React.FC = () => {
             message.error('Số lượng xuất vượt quá tồn kho!')
             return
         }
-        message.success(`Đã xuất ${soLuong} ${selectedItem.DonViTinh} ${selectedItem.TenHang}`)
-        setIsXuatHangModalVisible(false)
+        try {
+            await apiClient.capNhatTonKho(selectedItem.MaHang, -soLuong)
+            message.success(`Đã xuất ${soLuong} ${selectedItem.DonViTinh} ${selectedItem.TenHang}`)
+            setIsXuatHangModalVisible(false)
+            fetchMatHang()
+        } catch (err: any) {
+            message.error('Lỗi xuất hàng: ' + (err.message || 'Không thể cập nhật'))
+        }
     }
 
     return (
@@ -227,8 +268,9 @@ export const InventoryManager: React.FC = () => {
             >
                 <Table
                     columns={columns}
-                    dataSource={mockMatHang}
+                    dataSource={matHangList}
                     rowKey="MaHang"
+                    loading={loading}
                     pagination={{ pageSize: 10 }}
                     scroll={{ x: 'max-content' }}
                 />

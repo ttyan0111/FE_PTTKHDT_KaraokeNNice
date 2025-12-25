@@ -1,11 +1,44 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, Row, Col, Table, Tag, Button, message } from 'antd'
 import { CheckCircleOutlined, ClockCircleOutlined, DollarOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { mockBangChamCong, mockBangLuong, mockCaLamViec } from './mockData'
 import type { BangChamCong, BangLuong } from '../../types/accountant'
+import { apiClient } from '../../services/api'
 
 export const PayrollManager: React.FC = () => {
+    const [bangLuongList, setBangLuongList] = useState<any[]>([])
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        fetchBangLuong()
+    }, [])
+
+    const fetchBangLuong = async () => {
+        setLoading(true)
+        try {
+            const currentDate = new Date()
+            const thang = currentDate.getMonth() + 1
+            const nam = currentDate.getFullYear()
+            
+            const response = await apiClient.getAllBangLuong(thang, nam)
+            const data = Array.isArray(response) ? response.map((item: any) => ({
+                MaLuong: item.maLuong,
+                HoTenNV: item.nhanVien?.hoTen || `NV-${item.maNV}`,
+                Thang: item.thang,
+                Nam: item.nam,
+                ChiTietCacKhoan: `Lương CB + Thưởng - Trừ`,
+                TongLuongNhan: Number(item.tongLuongNhan) || 0
+            })) : []
+            
+            setBangLuongList(data.length > 0 ? data : mockBangLuong)
+        } catch (err: any) {
+            message.error('Lỗi tải dữ liệu lương: ' + (err.message || ''))
+            setBangLuongList(mockBangLuong)
+        } finally {
+            setLoading(false)
+        }
+    }
     const chamCongColumns: ColumnsType<BangChamCong> = [
         {
             title: 'Nhân Viên',
@@ -82,7 +115,7 @@ export const PayrollManager: React.FC = () => {
         }
     ]
 
-    const tongLuong = mockBangLuong.reduce((sum, l) => sum + l.TongLuongNhan, 0)
+    const tongLuong = bangLuongList.reduce((sum, l) => sum + l.TongLuongNhan, 0)
 
     return (
         <div>
@@ -177,8 +210,9 @@ export const PayrollManager: React.FC = () => {
 
                 <Table
                     columns={luongColumns}
-                    dataSource={mockBangLuong}
+                    dataSource={bangLuongList}
                     rowKey="MaLuong"
+                    loading={loading}
                     pagination={false}
                     scroll={{ x: 'max-content' }}
                 />

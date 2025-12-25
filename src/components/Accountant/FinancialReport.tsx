@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { Card, Row, Col, Statistic, Table } from 'antd'
+import React, { useMemo, useEffect, useState } from 'react'
+import { Card, Row, Col, Statistic, Table, message } from 'antd'
 import {
     RiseOutlined,
     FallOutlined,
@@ -9,15 +9,51 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import { mockHoaDon, mockBangLuong, mockPhieuNhap } from './mockData'
 import type { HoaDon } from '../../types/accountant'
+import { apiClient } from '../../services/api'
 
 export const FinancialReport: React.FC = () => {
+    const [hoaDonList, setHoaDonList] = useState<any[]>([])
+    const [bangLuongList, setBangLuongList] = useState<any[]>([])
+    const [phieuNhapList, setPhieuNhapList] = useState<any[]>([])
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        fetchFinancialData()
+    }, [])
+
+    const fetchFinancialData = async () => {
+        setLoading(true)
+        try {
+            const currentDate = new Date()
+            const thang = currentDate.getMonth() + 1
+            const nam = currentDate.getFullYear()
+
+            const [hoaDonRes, bangLuongRes, phieuNhapRes] = await Promise.all([
+                apiClient.getAllHoaDon().catch(() => mockHoaDon),
+                apiClient.getAllBangLuong(thang, nam).catch(() => mockBangLuong),
+                apiClient.getAllPhieuNhap().catch(() => mockPhieuNhap)
+            ])
+
+            setHoaDonList(Array.isArray(hoaDonRes) ? hoaDonRes : mockHoaDon)
+            setBangLuongList(Array.isArray(bangLuongRes) ? bangLuongRes : mockBangLuong)
+            setPhieuNhapList(Array.isArray(phieuNhapRes) ? phieuNhapRes : mockPhieuNhap)
+        } catch (err: any) {
+            message.error('Lỗi tải báo cáo tài chính: ' + (err.message || ''))
+            setHoaDonList(mockHoaDon)
+            setBangLuongList(mockBangLuong)
+            setPhieuNhapList(mockPhieuNhap)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const financialStats = useMemo(() => {
         // Tổng thu từ hóa đơn
-        const tongThu = mockHoaDon.reduce((sum, hd) => sum + hd.TongTien, 0)
+        const tongThu = hoaDonList.reduce((sum, hd) => sum + (Number(hd.tongTien) || Number(hd.TongTien) || 0), 0)
 
         // Tổng chi: Lương + Nhập hàng
-        const tongChiLuong = mockBangLuong.reduce((sum, l) => sum + l.TongLuongNhan, 0)
-        const tongChiNhapHang = mockPhieuNhap.reduce((sum, pn) => sum + pn.TongTienNhap, 0)
+        const tongChiLuong = bangLuongList.reduce((sum, l) => sum + (Number(l.tongLuongNhan) || Number(l.TongLuongNhan) || 0), 0)
+        const tongChiNhapHang = phieuNhapList.reduce((sum, pn) => sum + (Number(pn.tongTienNhap) || Number(pn.TongTienNhap) || 0), 0)
         const tongChi = tongChiLuong + tongChiNhapHang
 
         // Lợi nhuận
@@ -30,50 +66,49 @@ export const FinancialReport: React.FC = () => {
             tongChiNhapHang,
             loiNhuan
         }
-    }, [])
+    }, [hoaDonList, bangLuongList, phieuNhapList])
 
-    const hoaDonColumns: ColumnsType<HoaDon> = [
+    const hoaDonColumns: ColumnsType<any> = [
         {
             title: 'Mã HĐ',
-            dataIndex: 'MaHD',
-            key: 'MaHD',
-            render: (val) => <span style={{ fontWeight: '600', color: '#8b5cf6' }}>#{val}</span>
+            key: 'maHD',
+            render: (_, record) => <span style={{ fontWeight: '600', color: '#8b5cf6' }}>#{record.maHD || record.MaHD}</span>
         },
         {
             title: 'Ngày Lập',
-            dataIndex: 'NgayLap',
-            key: 'NgayLap',
-            render: (time) => time.split(' ')[0]
+            key: 'ngayLap',
+            render: (_, record) => {
+                const date = record.ngayLap || record.NgayLap
+                if (!date) return 'N/A'
+                return typeof date === 'string' ? date.split('T')[0].split(' ')[0] : date
+            }
         },
         {
             title: 'Tiền Phòng',
-            dataIndex: 'TienPhong',
-            key: 'TienPhong',
-            render: (val) => `${val.toLocaleString('vi-VN')} đ`,
+            key: 'tienPhong',
+            render: (_, record) => `${(Number(record.tienPhong || record.TienPhong) || 0).toLocaleString('vi-VN')} đ`,
             align: 'right'
         },
         {
             title: 'Tiền Dịch Vụ',
-            dataIndex: 'TienDichVu',
-            key: 'TienDichVu',
-            render: (val) => `${val.toLocaleString('vi-VN')} đ`,
+            key: 'tienDichVu',
+            render: (_, record) => `${(Number(record.tienDichVu || record.TienDichVu) || 0).toLocaleString('vi-VN')} đ`,
             align: 'right'
         },
         {
             title: 'Tổng Tiền',
-            dataIndex: 'TongTien',
-            key: 'TongTien',
-            render: (val) => (
+            key: 'tongTien',
+            render: (_, record) => (
                 <span style={{ fontWeight: '700', color: '#10b981' }}>
-                    {val.toLocaleString('vi-VN')} đ
+                    {(Number(record.tongTien || record.TongTien) || 0).toLocaleString('vi-VN')} đ
                 </span>
             ),
             align: 'right'
         },
         {
             title: 'Thanh Toán',
-            dataIndex: 'HinhThucThanhToan',
-            key: 'HinhThucThanhToan'
+            key: 'hinhThucThanhToan',
+            render: (_, record) => record.hinhThucThanhToan || record.HinhThucThanhToan || 'N/A'
         }
     ]
 
@@ -214,8 +249,9 @@ export const FinancialReport: React.FC = () => {
             >
                 <Table
                     columns={hoaDonColumns}
-                    dataSource={mockHoaDon}
-                    rowKey="MaHD"
+                    dataSource={hoaDonList}
+                    rowKey={(record) => record.maHD || record.MaHD}
+                    loading={loading}
                     pagination={{ pageSize: 10 }}
                     scroll={{ x: 'max-content' }}
                 />

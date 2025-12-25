@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { Card, Row, Col, Statistic } from 'antd'
+import React, { useMemo, useState, useEffect } from 'react'
+import { Card, Row, Col, Statistic, message } from 'antd'
 import {
     DollarOutlined,
     ShoppingOutlined,
@@ -8,20 +8,76 @@ import {
     FallOutlined
 } from '@ant-design/icons'
 import { mockMatHang, mockHoaDon, mockBangLuong, mockNhanVien } from './mockData'
+import { apiClient } from '../../services/api'
 
 export const AccountantDashboard: React.FC = () => {
+    const [matHangList, setMatHangList] = useState<any[]>([])
+    const [hoaDonList, setHoaDonList] = useState<any[]>([])
+    const [bangLuongList, setBangLuongList] = useState<any[]>([])
+    const [nhanVienList, setNhanVienList] = useState<any[]>([])
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        fetchAllData()
+    }, [])
+
+    const fetchAllData = async () => {
+        setLoading(true)
+        try {
+            const currentDate = new Date()
+            const thang = currentDate.getMonth() + 1
+            const nam = currentDate.getFullYear()
+
+            const [matHangRes, hoaDonRes, bangLuongRes, nhanVienRes] = await Promise.all([
+                apiClient.getAllMatHang().catch(() => mockMatHang),
+                apiClient.getAllHoaDon().catch(() => mockHoaDon),
+                apiClient.getAllBangLuong(thang, nam).catch(() => mockBangLuong),
+                apiClient.get('/v1/quan-ly-tai-khoan-nhan-vien/danh-sach').catch(() => ({ data: mockNhanVien }))
+            ])
+
+            setMatHangList(Array.isArray(matHangRes) ? matHangRes : mockMatHang)
+            setHoaDonList(Array.isArray(hoaDonRes) ? hoaDonRes : mockHoaDon)
+            setBangLuongList(Array.isArray(bangLuongRes) ? bangLuongRes : mockBangLuong)
+            
+            let nhanVienData = nhanVienRes.data
+            if (nhanVienData && typeof nhanVienData === 'object' && !Array.isArray(nhanVienData)) {
+                nhanVienData = nhanVienData.data || nhanVienData.content || nhanVienData.nhanViens || []
+            }
+            setNhanVienList(Array.isArray(nhanVienData) ? nhanVienData : mockNhanVien)
+        } catch (err: any) {
+            message.error('Lỗi tải dữ liệu tổng quan: ' + (err.message || ''))
+            setMatHangList(mockMatHang)
+            setHoaDonList(mockHoaDon)
+            setBangLuongList(mockBangLuong)
+            setNhanVienList(mockNhanVien)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const stats = useMemo(() => {
         // Tính tổng vốn tồn kho
-        const tongVonTonKho = mockMatHang.reduce((sum, item) => sum + (item.GiaNhap * item.SoLuongTon), 0)
+        const tongVonTonKho = matHangList.reduce((sum, item) => {
+            const giaNhap = Number(item.giaNhap || item.GiaNhap) || 0
+            const soLuongTon = Number(item.soLuongTon || item.SoLuongTon) || 0
+            return sum + (giaNhap * soLuongTon)
+        }, 0)
 
         // Tính tổng doanh thu tháng
-        const tongDoanhThu = mockHoaDon.reduce((sum, hd) => sum + hd.TongTien, 0)
+        const tongDoanhThu = hoaDonList.reduce((sum, hd) => {
+            return sum + (Number(hd.tongTien || hd.TongTien) || 0)
+        }, 0)
 
         // Tính tổng lương tháng
-        const tongLuong = mockBangLuong.reduce((sum, luong) => sum + luong.TongLuongNhan, 0)
+        const tongLuong = bangLuongList.reduce((sum, luong) => {
+            return sum + (Number(luong.tongLuongNhan || luong.TongLuongNhan) || 0)
+        }, 0)
 
         // Số nhân viên đang làm
-        const soNhanVien = mockNhanVien.filter(nv => nv.TrangThai === 'Dang lam viec').length
+        const soNhanVien = nhanVienList.filter(nv => {
+            const trangThai = (nv.trangThai || nv.TrangThai || '').toLowerCase()
+            return trangThai.includes('làm') || trangThai === 'active' || trangThai === 'dang lam viec'
+        }).length
 
         return {
             tongVonTonKho,
@@ -30,7 +86,7 @@ export const AccountantDashboard: React.FC = () => {
             soNhanVien,
             loiNhuan: tongDoanhThu - tongLuong
         }
-    }, [])
+    }, [matHangList, hoaDonList, bangLuongList, nhanVienList])
 
     return (
         <div>

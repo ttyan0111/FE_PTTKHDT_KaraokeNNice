@@ -381,7 +381,7 @@ export const InvoiceManagement: React.FC<InvoiceManagementProps> = ({ onDataUpda
                 <div><strong>Mã Phiếu Sử Dụng:</strong> {selectedInvoice.maPhieuSuDung}</div>
               </Col>
               <Col span={12}>
-                <div><strong>Khách Hàng:</strong> KH-{selectedInvoice.maKH}</div>
+                <div><strong>Nhân Viên:</strong> {selectedInvoice.maNVThanhToan ? `${selectedInvoice.maNVThanhToan}` : 'N/A'}</div>
                 <div><strong>Hình Thức TT:</strong> {selectedInvoice.hinhThucThanhToan}</div>
                 <div><strong>Trạng Thái:</strong> <Tag color={selectedInvoice.trangThai === 'Đã thanh toán' ? 'green' : 'orange'}>{selectedInvoice.trangThai}</Tag></div>
               </Col>
